@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8fafc;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background-color: #ffffff !important;
+    padding: 0 !important;
+    color: #000 !important;
+  }
+  .container-print {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  .grid-print {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  .card-print {
+    break-inside: avoid;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+  .header-print {
+    margin-bottom: 20px !important;
+    border-bottom: 2px solid #0f172a !important;
+    padding-bottom: 10px !important;
+    display: block !important;
+  }
+}
