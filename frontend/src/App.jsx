@@ -15,7 +15,7 @@ const STORAGE_KEY = 'shamil_custom_catalog_images_613_v11';
 const REQ_STORAGE_KEY = 'shamil_active_requisicion_draft_v1';
 const AUTH_USER_KEY = 'corpoelec_auth_user_v1';
 const AUTH_TOKEN_KEY = 'corpoelec_auth_token_v1';
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const API_URL = `${API_BASE}/materiales`;
 
 function cleanQuery(str) {
