@@ -4,9 +4,9 @@
   "description": "API REST con PostgreSQL para el Catálogo Técnico de Materiales Eléctricos (613 ítems)",
   "main": "src/app.js",
   "scripts": {
-    "start": "node --watch src/app.js",
-    "dev": "node --watch src/app.js",
-    "db:init": "node src/database/initDb.js"
+    "start": "node src/database/initDb.js && node src/app.js",
+  	"dev": "node --watch src/app.js",
+  	"db:init": "node src/database/initDb.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
