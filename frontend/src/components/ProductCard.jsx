@@ -1,4 +1,6 @@
 import React from 'react';
+import { getFamiliaBadgeClasses } from './FamiliasModal';
+import { resolveMediaUrl } from '../utils/api';
 
 export function CategorySVG({ category }) {
   switch (category) {
@@ -124,6 +126,7 @@ function getCategoryBadgeClass(category) {
 export default function ProductCard({
   item,
   customImg,
+  familiaColor,
   currentUser,
   reqItem,
   onAddToReq,
@@ -134,10 +137,13 @@ export default function ProductCard({
   onDeleteMaterial,
   onToggleStock,
 }) {
-  const activeImage = item.imagen_url || customImg;
+  const activeImage = resolveMediaUrl(item.imagen_url || customImg);
   const canEdit = Boolean(currentUser?.puede_editar);
   const canDelete = Boolean(currentUser?.puede_eliminar);
   const canComputos = Boolean(currentUser?.puede_computos);
+  const badgeClasses = familiaColor
+    ? getFamiliaBadgeClasses(familiaColor)
+    : getCategoryBadgeClass(item.category);
 
   const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(
     'material electrico ' + item.title
@@ -176,6 +182,7 @@ export default function ProductCard({
           <img
             src={activeImage}
             alt={item.title}
+            loading="lazy"
             className="w-full h-full object-contain p-2"
           />
         ) : (
@@ -217,9 +224,7 @@ export default function ProductCard({
       <div className="p-4 flex flex-col flex-grow space-y-2">
         <div className="flex items-center justify-between gap-2">
           <span
-            className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border truncate ${getCategoryBadgeClass(
-              item.category
-            )}`}
+            className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border truncate ${badgeClasses}`}
             title={item.category}
           >
             {item.category}

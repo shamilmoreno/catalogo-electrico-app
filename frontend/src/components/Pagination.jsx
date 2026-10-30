@@ -11,14 +11,19 @@ export default function Pagination({
 }) {
   if (totalItems === 0) return null;
 
-  const pageNumbers = [];
+  const pageItems = [];
+  let prevPage = 0;
   for (let i = 1; i <= totalPages; i++) {
     if (
       i === 1 ||
       i === totalPages ||
       (i >= currentPage - 2 && i <= currentPage + 2)
     ) {
-      pageNumbers.push(i);
+      if (prevPage && i - prevPage > 1) {
+        pageItems.push(`ellipsis-${prevPage}-${i}`);
+      }
+      pageItems.push(i);
+      prevPage = i;
     }
   }
 
@@ -39,19 +44,28 @@ export default function Pagination({
           <i className="fa-solid fa-chevron-left"></i>
         </button>
 
-        {pageNumbers.map((pageNum) => (
-          <button
-            key={pageNum}
-            onClick={() => onPageChange(pageNum)}
-            className={`px-3 py-1 rounded border text-xs font-semibold cursor-pointer ${
-              pageNum === currentPage
-                ? 'bg-sky-600 text-white border-sky-600'
-                : 'bg-white hover:bg-slate-100 text-slate-700'
-            }`}
-          >
-            {pageNum}
-          </button>
-        ))}
+        {pageItems.map((entry) =>
+          typeof entry === 'string' ? (
+            <span
+              key={entry}
+              className="px-1.5 py-1 text-xs text-slate-400 select-none"
+            >
+              ...
+            </span>
+          ) : (
+            <button
+              key={entry}
+              onClick={() => onPageChange(entry)}
+              className={`px-3 py-1 rounded border text-xs font-semibold cursor-pointer ${
+                entry === currentPage
+                  ? 'bg-sky-600 text-white border-sky-600'
+                  : 'bg-white hover:bg-slate-100 text-slate-700'
+              }`}
+            >
+              {entry}
+            </button>
+          )
+        )}
 
         <button
           disabled={currentPage === totalPages}

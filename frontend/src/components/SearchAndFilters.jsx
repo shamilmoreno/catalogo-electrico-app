@@ -19,9 +19,12 @@ export default function SearchAndFilters({
   onSearchChange,
   selectedCategory,
   onCategoryChange,
+  statusFilter = 'ALL',
+  onStatusFilterChange,
   itemsPerPage,
   onLimitChange,
   totalItemsCount = 613,
+  filterCounts = {},
   familias = [],
   onOpenFamiliasModal,
 }) {
@@ -30,8 +33,20 @@ export default function SearchAndFilters({
       ? familias.map((f) => (typeof f === 'string' ? { nombre: f } : f))
       : DEFAULT_FAMILIAS.map((nombre) => ({ nombre }));
 
+  const STATUS_PILLS = [
+    { id: 'ALL', label: 'Todos', count: totalItemsCount, icon: 'fa-border-all' },
+    { id: 'IN_STOCK', label: 'En Stock', count: filterCounts.inStock, icon: 'fa-check-circle text-emerald-600' },
+    { id: 'OUT_OF_STOCK', label: 'Agotados', count: filterCounts.outOfStock, icon: 'fa-ban text-rose-600' },
+    { id: 'WITH_PHOTO', label: 'Con Foto', count: filterCounts.withPhoto, icon: 'fa-camera text-sky-600' },
+    { id: 'WITHOUT_PHOTO', label: 'Sin Foto', count: filterCounts.withoutPhoto, icon: 'fa-image text-amber-600' },
+    { id: 'WITH_PDF', label: 'Con Ficha PDF', count: filterCounts.withPdf, icon: 'fa-file-pdf text-rose-600' },
+  ];
+
+  const hasActiveFilters =
+    Boolean(searchQuery) || selectedCategory !== 'ALL' || statusFilter !== 'ALL';
+
   return (
-    <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 mb-6 space-y-4 no-print">
+    <div className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200 mb-6 space-y-3.5 no-print">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
         {/* Buscador por texto */}
         <div className="md:col-span-5 lg:col-span-6 relative">
@@ -41,8 +56,18 @@ export default function SearchAndFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Busca por pieza, familia, descripción o nomenclatura (ej. AG, 3T)..."
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => onSearchChange('')}
+              className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+              title="Limpiar búsqueda"
+            >
+              <i className="fa-solid fa-circle-xmark text-sm"></i>
+            </button>
+          )}
         </div>
 
         {/* Filtro por Familia + Botón rápido para CRUD de Familias */}
@@ -93,6 +118,56 @@ export default function SearchAndFilters({
           </select>
         </div>
       </div>
+
+      {/* Filtros rápidos de estado y auditoría */}
+      {onStatusFilterChange && (
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {STATUS_PILLS.map((pill) => {
+              const active = statusFilter === pill.id;
+              return (
+                <button
+                  key={pill.id}
+                  type="button"
+                  onClick={() => onStatusFilterChange(pill.id)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition flex items-center gap-1.5 cursor-pointer ${
+                    active
+                      ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                      : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'
+                  }`}
+                >
+                  <i className={`fa-solid ${pill.icon} ${active ? 'text-sky-400' : ''} text-[11px]`}></i>
+                  <span>{pill.label}</span>
+                  {pill.count != null && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                        active ? 'bg-slate-700 text-sky-300' : 'bg-slate-200/80 text-slate-700'
+                      }`}
+                    >
+                      {pill.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={() => {
+                onSearchChange('');
+                onCategoryChange('ALL');
+                onStatusFilterChange('ALL');
+              }}
+              className="text-xs text-rose-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+            >
+              <i className="fa-solid fa-rotate-left text-[10px]"></i>
+              <span>Restablecer filtros</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -5,7 +5,28 @@ const { Client } = require('pg');
 const { pool, dbConfig } = require('../config/db');
 
 function hashPassword(password) {
-  return crypto.createHash('sha256').update(String(password)).digest('hex');
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derived = crypto.scryptSync(String(password), salt, 64).toString('hex');
+  return `scrypt:${salt}:${derived}`;
+}
+
+function verifyPassword(password, storedHash) {
+  if (!storedHash || typeof storedHash !== 'string') return false;
+  if (storedHash.startsWith('scrypt:')) {
+    const parts = storedHash.split(':');
+    if (parts.length !== 3) return false;
+    const [, salt, keyHex] = parts;
+    const derived = crypto.scryptSync(String(password), salt, 64);
+    const keyBuf = Buffer.from(keyHex, 'hex');
+    if (derived.length !== keyBuf.length) return false;
+    return crypto.timingSafeEqual(derived, keyBuf);
+  }
+  // Compatibilidad con hashes SHA-256 previos
+  const legacyHash = crypto.createHash('sha256').update(String(password)).digest('hex');
+  const a = Buffer.from(legacyHash, 'utf8');
+  const b = Buffer.from(storedHash, 'utf8');
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 }
 
 async function ensureDatabaseExists() {
@@ -286,4 +307,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { initDatabase, hashPassword };
+module.exports = { initDatabase, hashPassword, verifyPassword };

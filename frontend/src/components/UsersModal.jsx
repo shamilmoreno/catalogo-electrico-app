@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api';
 
 export const ROLE_PRESETS = {
   ADMIN: {
@@ -77,7 +78,7 @@ export default function UsersModal({
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${apiBaseUrl}/usuarios`);
+      const res = await apiFetch('/usuarios');
       if (res.ok) {
         const data = await res.json();
         setUsers(data);
@@ -160,13 +161,12 @@ export default function UsersModal({
       };
 
       const url = editingUser
-        ? `${apiBaseUrl}/usuarios/${editingUser.id}`
-        : `${apiBaseUrl}/usuarios`;
+        ? `/usuarios/${editingUser.id}`
+        : '/usuarios';
       const method = editingUser ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
@@ -196,14 +196,14 @@ export default function UsersModal({
   };
 
   const handleDeleteUser = async (u) => {
-    if (u.username === 'admin') {
-      alert('La cuenta principal "admin" no puede eliminarse.');
+    if (u.username === 'admin' || u.username === 'shamilmoreno') {
+      alert('La cuenta de Administrador Principal no puede eliminarse.');
       return;
     }
     if (!window.confirm(`¿Eliminar al usuario "${u.username}" de PostgreSQL?`)) return;
 
     try {
-      const res = await fetch(`${apiBaseUrl}/usuarios/${u.id}`, {
+      const res = await apiFetch(`/usuarios/${u.id}`, {
         method: 'DELETE',
       });
       const data = await res.json();
@@ -532,16 +532,18 @@ export default function UsersModal({
                           <i className="fa-solid fa-pen"></i>
                           <span>Permisos</span>
                         </button>
-                        {u.username !== 'admin' && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteUser(u)}
-                            className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs rounded-lg cursor-pointer"
-                            title="Eliminar usuario"
-                          >
-                            <i className="fa-solid fa-trash-can"></i>
-                          </button>
-                        )}
+                        {u.username !== 'admin' &&
+                          u.username !== 'shamilmoreno' &&
+                          u.id !== currentUser?.id && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteUser(u)}
+                              className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs rounded-lg cursor-pointer"
+                              title="Eliminar usuario"
+                            >
+                              <i className="fa-solid fa-trash-can"></i>
+                            </button>
+                          )}
                       </div>
                     </div>
                   );

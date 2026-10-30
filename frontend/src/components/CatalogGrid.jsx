@@ -4,6 +4,7 @@ import ProductCard from './ProductCard';
 export default function CatalogGrid({
   items,
   customImages,
+  familiasColorMap = {},
   currentUser,
   reqItemsMap = {},
   onAddToReq,
@@ -37,6 +38,7 @@ export default function CatalogGrid({
           key={item.id}
           item={item}
           customImg={customImages[item.title]}
+          familiaColor={familiasColorMap[item.category]}
           currentUser={currentUser}
           reqItem={reqItemsMap[item.id]}
           onAddToReq={onAddToReq}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api';
 
 const BADGE_COLORS = [
   { id: 'sky', label: 'Azul Eléctrico', classes: 'bg-sky-100 text-sky-800 border-sky-200' },
@@ -88,13 +89,12 @@ export default function FamiliasModal({
     setStatusMsg(null);
     try {
       const url = editingId
-        ? `${apiBaseUrl}/familias/${editingId}`
-        : `${apiBaseUrl}/familias`;
+        ? `/familias/${editingId}`
+        : '/familias';
       const method = editingId ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nombre: nombre.trim(),
           codigo: codigo.trim().toUpperCase(),
@@ -155,7 +155,7 @@ export default function FamiliasModal({
     }
 
     try {
-      const res = await fetch(`${apiBaseUrl}/familias/${fam.id}${query}`, {
+      const res = await apiFetch(`/familias/${fam.id}${query}`, {
         method: 'DELETE',
       });
       const data = await res.json();

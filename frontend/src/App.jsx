@@ -10,12 +10,15 @@ import DatasheetModal from './components/DatasheetModal';
 import LoginPage from './components/LoginPage';
 import UsersModal from './components/UsersModal';
 import FamiliasModal from './components/FamiliasModal';
+import {
+  apiFetch,
+  API_BASE,
+  AUTH_USER_KEY,
+  AUTH_TOKEN_KEY,
+} from './utils/api';
 
 const STORAGE_KEY = 'shamil_custom_catalog_images_613_v11';
 const REQ_STORAGE_KEY = 'shamil_active_requisicion_draft_v1';
-const AUTH_USER_KEY = 'corpoelec_auth_user_v1';
-const AUTH_TOKEN_KEY = 'corpoelec_auth_token_v1';
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const API_URL = `${API_BASE}/materiales`;
 
 function cleanQuery(str) {
@@ -46,6 +49,7 @@ export default function App() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
   const [itemsPerPage, setItemsPerPage] = useState('48');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -93,9 +97,7 @@ export default function App() {
     const token = localStorage.getItem(AUTH_TOKEN_KEY);
     if (!token) return;
 
-    fetch(`${API_BASE}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    apiFetch('/auth/me')
       .then(async (res) => {
         if (!res.ok) {
           handleLogout();
@@ -215,7 +217,40 @@ export default function App() {
     fetchFamilias();
   }, [currentUser?.id]);
 
-  // Filtrado por texto y categoría
+  // Mapa rápido de colores de familias para las etiquetas del catálogo
+  const familiasColorMap = useMemo(() => {
+    const map = {};
+    for (const f of familias) {
+      if (f && f.nombre && f.color_badge) {
+        map[f.nombre] = f.color_badge;
+      }
+    }
+    return map;
+  }, [familias]);
+
+  // Contadores rápidos para los filtros de estado y auditoría
+  const filterCounts = useMemo(() => {
+    let inStock = 0;
+    let outOfStock = 0;
+    let withPhoto = 0;
+    let withoutPhoto = 0;
+    let withPdf = 0;
+
+    for (const item of materialsData) {
+      if (item.en_stock !== false) inStock++;
+      else outOfStock++;
+
+      const hasImg = Boolean(item.imagen_url || customImages[item.title]);
+      if (hasImg) withPhoto++;
+      else withoutPhoto++;
+
+      if (item.datasheet_url) withPdf++;
+    }
+
+    return { inStock, outOfStock, withPhoto, withoutPhoto, withPdf };
+  }, [materialsData, customImages]);
+
+  // Filtrado por texto, categoría y estado
   const filteredData = useMemo(() => {
     const searchClean = cleanQuery(searchQuery);
     return materialsData.filter((item) => {
@@ -225,9 +260,18 @@ export default function App() {
       const matchesSearch = itemClean.includes(searchClean);
       const matchesCategory =
         selectedCategory === 'ALL' || item.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+
+      let matchesStatus = true;
+      const hasImg = Boolean(item.imagen_url || customImages[item.title]);
+      if (statusFilter === 'IN_STOCK') matchesStatus = item.en_stock !== false;
+      else if (statusFilter === 'OUT_OF_STOCK') matchesStatus = item.en_stock === false;
+      else if (statusFilter === 'WITH_PHOTO') matchesStatus = hasImg;
+      else if (statusFilter === 'WITHOUT_PHOTO') matchesStatus = !hasImg;
+      else if (statusFilter === 'WITH_PDF') matchesStatus = Boolean(item.datasheet_url);
+
+      return matchesSearch && matchesCategory && matchesStatus;
     });
-  }, [materialsData, searchQuery, selectedCategory]);
+  }, [materialsData, searchQuery, selectedCategory, statusFilter, customImages]);
 
   // Cálculo de paginación
   const totalItems = filteredData.length;
@@ -249,6 +293,11 @@ export default function App() {
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusFilterChange = (value) => {
+    setStatusFilter(value);
     setCurrentPage(1);
   };
 
@@ -287,6 +336,7 @@ export default function App() {
           category: item.category,
           unidad: inferDefaultUnit(item),
           cantidad: 1,
+          precio_referencia: item.precio_referencia ?? null,
           nota_tecnica: '',
         },
       ];
@@ -333,9 +383,8 @@ export default function App() {
 
   const handleSaveMaterialModal = async (formData) => {
     if (materialModalState.mode === 'create') {
-      const res = await fetch(API_URL, {
+      const res = await apiFetch('/materiales', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
@@ -352,6 +401,9 @@ export default function App() {
         specs: created.especificaciones || created.s,
         imagen_url: created.imagen_url || null,
         datasheet_url: created.datasheet_url || null,
+        norma_tecnica: created.norma_tecnica || null,
+        nivel_tension: created.nivel_tension || null,
+        material_base: created.material_base || null,
         proveedor_nombre: created.proveedor_nombre || null,
         proveedor_contacto: created.proveedor_contacto || null,
         proveedor_url: created.proveedor_url || null,
@@ -367,9 +419,8 @@ export default function App() {
       setCurrentPage(1);
       fetchFamilias();
     } else {
-      const res = await fetch(`${API_URL}/${formData.id}`, {
+      const res = await apiFetch(`/materiales/${formData.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
@@ -386,6 +437,9 @@ export default function App() {
         specs: updated.especificaciones || updated.s,
         imagen_url: updated.imagen_url || null,
         datasheet_url: updated.datasheet_url || null,
+        norma_tecnica: updated.norma_tecnica || null,
+        nivel_tension: updated.nivel_tension || null,
+        material_base: updated.material_base || null,
         proveedor_nombre: updated.proveedor_nombre || null,
         proveedor_contacto: updated.proveedor_contacto || null,
         proveedor_url: updated.proveedor_url || null,
@@ -420,7 +474,7 @@ export default function App() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/${item.id}`, {
+      const res = await apiFetch(`/materiales/${item.id}`, {
         method: 'DELETE',
       });
       if (!res.ok) {
@@ -439,9 +493,8 @@ export default function App() {
     if (!currentUser?.puede_editar) return;
     const nextStock = !(item.en_stock !== false);
     try {
-      const res = await fetch(`${API_URL}/${item.id}/stock`, {
+      const res = await apiFetch(`/materiales/${item.id}/stock`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ en_stock: nextStock }),
       });
       if (res.ok) {
@@ -461,9 +514,8 @@ export default function App() {
     const cleanUrl = url && url.trim() !== '' ? url.trim() : null;
 
     try {
-      const res = await fetch(`${API_URL}/${item.id}/imagen`, {
+      const res = await apiFetch(`/materiales/${item.id}/imagen`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imagen_url: cleanUrl }),
       });
 
@@ -585,9 +637,12 @@ export default function App() {
           onSearchChange={handleSearchChange}
           selectedCategory={selectedCategory}
           onCategoryChange={handleCategoryChange}
+          statusFilter={statusFilter}
+          onStatusFilterChange={handleStatusFilterChange}
           itemsPerPage={itemsPerPage}
           onLimitChange={handleLimitChange}
           totalItemsCount={materialsData.length}
+          filterCounts={filterCounts}
           familias={familias}
           onOpenFamiliasModal={() => setIsFamiliasModalOpen(true)}
         />
@@ -622,6 +677,7 @@ export default function App() {
             <CatalogGrid
               items={pageItems}
               customImages={customImages}
+              familiasColorMap={familiasColorMap}
               currentUser={currentUser}
               reqItemsMap={reqItemsMap}
               onAddToReq={handleAddToReq}

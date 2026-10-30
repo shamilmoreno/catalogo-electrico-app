@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { CategorySVG } from './ProductCard';
+import { apiFetch, resolveMediaUrl } from '../utils/api';
 
 function analyzeElectricalParameters(item) {
   const upper = (item?.title || '').toUpperCase();
@@ -97,7 +98,8 @@ export default function DatasheetModal({
 
   if (!isOpen || !item) return null;
 
-  const activeImage = item.imagen_url || customImg;
+  const activeImage = resolveMediaUrl(item.imagen_url || customImg);
+  const resolvedPdfUrl = resolveMediaUrl(item.datasheet_url);
   const tech = analyzeElectricalParameters(item);
   const canEdit = Boolean(currentUser?.puede_editar);
   const canComputos = Boolean(currentUser?.puede_computos);
@@ -113,7 +115,7 @@ export default function DatasheetModal({
       const formData = new FormData();
       formData.append('datasheet', file);
 
-      const res = await fetch(`${apiBaseUrl}/materiales/${item.id}/upload-datasheet`, {
+      const res = await apiFetch(`/materiales/${item.id}/upload-datasheet`, {
         method: 'POST',
         body: formData,
       });
@@ -135,9 +137,8 @@ export default function DatasheetModal({
       return;
     }
     try {
-      const res = await fetch(`${apiBaseUrl}/materiales/${item.id}/datasheet`, {
+      const res = await apiFetch(`/materiales/${item.id}/datasheet`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ datasheet_url: null }),
       });
       if (res.ok) {
@@ -550,7 +551,7 @@ export default function DatasheetModal({
                       <span>{showEmbeddedPdf ? 'Ocultar Visor' : 'Ver aquí'}</span>
                     </button>
                     <a
-                      href={item.datasheet_url}
+                      href={resolvedPdfUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 shadow-sm"
@@ -581,10 +582,10 @@ export default function DatasheetModal({
               </p>
             )}
 
-            {showEmbeddedPdf && item.datasheet_url && (
+            {showEmbeddedPdf && resolvedPdfUrl && (
               <div className="mt-4 border border-slate-300 rounded-lg overflow-hidden h-96">
                 <iframe
-                  src={item.datasheet_url}
+                  src={resolvedPdfUrl}
                   title="Datasheet PDF"
                   className="w-full h-full"
                 />

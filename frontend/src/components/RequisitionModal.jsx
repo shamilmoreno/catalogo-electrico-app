@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api';
 
 const UNIDADES = ['PZA', 'MTS', 'KG', 'JGO', 'KIT', 'ROLLO', 'UND'];
 const NIVELES_TENSION = [
@@ -30,6 +31,8 @@ export default function RequisitionModal({
   const [activeTab, setActiveTab] = useState('builder'); // 'builder' | 'history'
 
   // Metadatos del proyecto
+  const [editingReqId, setEditingReqId] = useState(null);
+  const [editingReqCodigo, setEditingReqCodigo] = useState('');
   const [proyecto, setProyecto] = useState('');
   const [solicitante, setSolicitante] = useState('');
   const [ubicacion, setUbicacion] = useState('');
@@ -45,7 +48,7 @@ export default function RequisitionModal({
   const fetchSavedRequisiciones = async () => {
     try {
       setLoadingHistory(true);
-      const res = await fetch(`${apiBaseUrl}/requisiciones`);
+      const res = await apiFetch('/requisiciones');
       if (res.ok) {
         const data = await res.json();
         setSavedRequisiciones(data);
@@ -71,10 +74,14 @@ export default function RequisitionModal({
     (acc, it) => acc + (Number(it.cantidad) || 0),
     0
   );
+  const totalEstimadoUsd = reqItems.reduce(
+    (acc, it) =>
+      acc + (Number(it.cantidad) || 0) * (Number(it.precio_referencia) || 0),
+    0
+  );
 
-  // Guardar en PostgreSQL (tablas requisiciones y requisicion_items)
-  const handleSaveToPostgres = async (e) => {
-    e.preventDefault();
+  // Guardar o actualizar en PostgreSQL (tablas requisiciones y requisicion_items)
+  const handleSaveToPostgres = async (asNew = false) => {
     if (!proyecto.trim()) {
       setStatusMsg({
         type: 'error',
@@ -93,9 +100,12 @@ export default function RequisitionModal({
     setSaving(true);
     setStatusMsg(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/requisiciones`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const isUpdate = Boolean(editingReqId && !asNew);
+      const endpoint = isUpdate ? `/requisiciones/${editingReqId}` : '/requisiciones';
+      const method = isUpdate ? 'PUT' : 'POST';
+
+      const res = await apiFetch(endpoint, {
+        method,
         body: JSON.stringify({
           proyecto,
           solicitante,
@@ -110,9 +120,13 @@ export default function RequisitionModal({
         throw new Error(data.details || data.error || 'Error al guardar en PostgreSQL');
       }
 
+      setEditingReqId(data.requisicion.id);
+      setEditingReqCodigo(data.requisicion.codigo);
       setStatusMsg({
         type: 'success',
-        text: `¡Guardado en PostgreSQL con código ${data.requisicion.codigo}!`,
+        text: isUpdate
+          ? `¡Requisición ${data.requisicion.codigo} actualizada en PostgreSQL!`
+          : `¡Guardado en PostgreSQL con código ${data.requisicion.codigo}!`,
       });
       fetchSavedRequisiciones();
     } catch (err) {
@@ -282,6 +296,8 @@ export default function RequisitionModal({
   };
 
   const handleLoadFromHistory = (reqRecord) => {
+    setEditingReqId(reqRecord.id);
+    setEditingReqCodigo(reqRecord.codigo || '');
     setProyecto(reqRecord.proyecto || '');
     setSolicitante(reqRecord.solicitante || '');
     setUbicacion(reqRecord.ubicacion || '');
@@ -291,18 +307,22 @@ export default function RequisitionModal({
     setActiveTab('builder');
     setStatusMsg({
       type: 'success',
-      text: `Requisición ${reqRecord.codigo} cargada en la planilla activa.`,
+      text: `Requisición ${reqRecord.codigo} cargada en la planilla activa. Puedes actualizarla o guardarla como nueva.`,
     });
   };
 
   const handleDeleteFromHistory = async (id, codigo) => {
     if (!window.confirm(`¿Eliminar la requisición ${codigo} de PostgreSQL?`)) return;
     try {
-      const res = await fetch(`${apiBaseUrl}/requisiciones/${id}`, {
+      const res = await apiFetch(`/requisiciones/${id}`, {
         method: 'DELETE',
       });
       if (res.ok) {
         setSavedRequisiciones((prev) => prev.filter((r) => r.id !== id));
+        if (editingReqId === id) {
+          setEditingReqId(null);
+          setEditingReqCodigo('');
+        }
       }
     } catch (e) {
       console.error('Error eliminando requisición:', e);
@@ -676,16 +696,25 @@ export default function RequisitionModal({
         {/* Pie de Acciones */}
         {activeTab === 'builder' && (
           <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
-            <div>
+            <div className="flex flex-wrap items-center gap-4">
               {reqItems.length > 0 && (
                 <button
                   type="button"
-                  onClick={onClearAll}
+                  onClick={() => {
+                    setEditingReqId(null);
+                    setEditingReqCodigo('');
+                    onClearAll();
+                  }}
                   className="text-xs text-rose-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                 >
                   <i className="fa-solid fa-broom"></i>
                   <span>Vaciar Planilla Actual</span>
                 </button>
+              )}
+              {totalEstimadoUsd > 0 && (
+                <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2.5 py-1 rounded-lg font-mono">
+                  Total Estimado Ref.: ${totalEstimadoUsd.toFixed(2)} USD
+                </span>
               )}
             </div>
 
@@ -710,15 +739,32 @@ export default function RequisitionModal({
                 <span>Imprimir Planilla Oficial (PDF)</span>
               </button>
 
+              {editingReqId && (
+                <button
+                  type="button"
+                  disabled={saving || reqItems.length === 0}
+                  onClick={() => handleSaveToPostgres(true)}
+                  className="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
+                  title="Crear un nuevo código de requisición en PostgreSQL"
+                >
+                  <i className="fa-solid fa-copy"></i>
+                  <span>Guardar como Nueva</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 disabled={saving || reqItems.length === 0}
-                onClick={handleSaveToPostgres}
+                onClick={() => handleSaveToPostgres(false)}
                 className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
               >
                 <i className="fa-solid fa-floppy-disk"></i>
                 <span>
-                  {saving ? 'Guardando en BD...' : 'Guardar en PostgreSQL'}
+                  {saving
+                    ? 'Guardando en BD...'
+                    : editingReqId
+                    ? `Actualizar ${editingReqCodigo}`
+                    : 'Guardar en PostgreSQL'}
                 </span>
               </button>
             </div>

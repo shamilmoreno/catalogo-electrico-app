@@ -65,7 +65,8 @@ export default function LoginPage({ onLoginSuccess, apiBaseUrl = 'http://localho
       setGeneratedCodePreview(data.reset_code_preview || '');
       setResetCode(data.reset_code_preview || '');
       setSuccessMsg(
-        `Código de verificación generado para ${data.email || data.username}. Ingresa tu nueva contraseña a continuación.`
+        data.message ||
+          `Código de verificación generado para ${data.email || data.username}. Ingresa el código de 6 dígitos y tu nueva contraseña.`
       );
       setView('reset');
     } catch (err) {

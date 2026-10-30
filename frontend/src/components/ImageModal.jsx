@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
-const UPLOAD_API_URL = 'http://localhost:3000/api/upload';
+import { apiFetch, resolveMediaUrl } from '../utils/api';
 
 export default function ImageModal({
   isOpen,
@@ -36,7 +35,7 @@ export default function ImageModal({
       const formData = new FormData();
       formData.append('imagen', file);
 
-      const res = await fetch(UPLOAD_API_URL, {
+      const res = await apiFetch('/upload', {
         method: 'POST',
         body: formData,
       });
@@ -184,7 +183,7 @@ export default function ImageModal({
                 Vista Previa de la Imagen
               </p>
               <img
-                src={imageUrl.trim()}
+                src={resolveMediaUrl(imageUrl)}
                 alt="Preview"
                 className="h-36 object-contain mx-auto rounded bg-white p-1 border border-slate-100"
                 onError={(e) => {

@@ -6,16 +6,18 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const { pool } = require('./config/db');
-const { initDatabase, hashPassword } = require('./database/initDb');
+const { initDatabase, hashPassword, verifyPassword } = require('./database/initDb');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'corpoelec_catalogo_secret_2026_key';
+const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 días
 
-// Utilidades de Token firmado (HMAC-SHA256 sin dependencias externas)
+// Utilidades de Token firmado (HMAC-SHA256 con expiración y comparación segura)
 function createAuthToken(userId, username) {
+  const now = Date.now();
   const payload = Buffer.from(
-    JSON.stringify({ id: userId, username, iat: Date.now() })
+    JSON.stringify({ id: userId, username, iat: now, exp: now + TOKEN_TTL_MS })
   ).toString('base64url');
   const sig = crypto
     .createHmac('sha256', TOKEN_SECRET)
@@ -27,21 +29,105 @@ function createAuthToken(userId, username) {
 function verifyAuthToken(token) {
   if (!token || typeof token !== 'string' || !token.includes('.')) return null;
   const [payload, sig] = token.split('.');
+  if (!payload || !sig) return null;
   const expectedSig = crypto
     .createHmac('sha256', TOKEN_SECRET)
     .update(payload)
     .digest('base64url');
-  if (sig !== expectedSig) return null;
+  const sigBuf = Buffer.from(sig, 'utf8');
+  const expectedBuf = Buffer.from(expectedSig, 'utf8');
+  if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+    return null;
+  }
   try {
-    return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    const decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    if (decoded.exp && Date.now() > decoded.exp) {
+      return null;
+    }
+    return decoded;
   } catch {
     return null;
   }
 }
 
+// Middleware de autenticación y permisos RBAC
+async function requireAuth(req, res, next) {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const decoded = verifyAuthToken(token);
+
+  if (!decoded) {
+    return res.status(401).json({ error: 'Sesión no válida o expirada. Inicia sesión nuevamente.' });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT
+         id, username, email, nombre_completo, cargo, rol,
+         puede_crear, puede_editar, puede_eliminar,
+         puede_computos, puede_exportar, puede_usuarios, activo
+       FROM usuarios
+       WHERE id = $1`,
+      [decoded.id]
+    );
+
+    if (result.rowCount === 0 || !result.rows[0].activo) {
+      return res.status(401).json({ error: 'Usuario no encontrado o cuenta desactivada.' });
+    }
+
+    req.user = result.rows[0];
+    next();
+  } catch (error) {
+    return res.status(500).json({ error: 'Error al verificar permisos de sesión.' });
+  }
+}
+
+function requirePerm(...permKeys) {
+  return [
+    requireAuth,
+    (req, res, next) => {
+      if (req.user.rol === 'ADMIN') return next();
+      const hasPermission = permKeys.some((k) => Boolean(req.user[k]));
+      if (!hasPermission) {
+        return res.status(403).json({
+          error: 'Tu perfil de usuario no tiene permisos para realizar esta operación.',
+        });
+      }
+      next();
+    },
+  ];
+}
+
 // Carpeta local donde se guardan las fotos y datasheets PDF subidos desde la PC
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
+
+// Limpieza segura de archivos locales huérfanos en backend/uploads/
+async function removeOldUploadFile(fileUrl, ignoreMaterialId = null) {
+  if (!fileUrl || typeof fileUrl !== 'string' || !fileUrl.includes('/uploads/')) return;
+  try {
+    const rawName = fileUrl.split('/uploads/').pop().split('?')[0];
+    const safeFilename = path.basename(decodeURIComponent(rawName));
+    if (!safeFilename) return;
+
+    // Verificar que ningún otro material esté usando el mismo archivo
+    const inUseRes = await pool.query(
+      `SELECT 1 FROM materiales
+       WHERE (imagen_url LIKE $1 OR datasheet_url LIKE $1)
+         AND ($2::int IS NULL OR id <> $2::int)
+       LIMIT 1`,
+      [`%/uploads/${safeFilename}`, ignoreMaterialId]
+    );
+    if (inUseRes.rowCount > 0) return;
+
+    const fullPath = path.join(uploadsDir, safeFilename);
+    if (fs.existsSync(fullPath)) {
+      await fs.promises.unlink(fullPath);
+    }
+  } catch (err) {
+    console.warn('No se pudo limpiar archivo antiguo en uploads:', err.message);
+  }
+}
 
 // Configuración de Multer para guardar archivos en disco
 const storage = multer.diskStorage({
@@ -106,29 +192,41 @@ app.post('/api/auth/login', async (req, res) => {
 
   try {
     const cleanUser = username.trim().toLowerCase();
-    const passHash = hashPassword(password);
 
     const result = await pool.query(
       `SELECT
-         id, username, email, nombre_completo, cargo, rol,
+         id, username, email, password_hash, nombre_completo, cargo, rol,
          puede_crear, puede_editar, puede_eliminar,
          puede_computos, puede_exportar, puede_usuarios, activo
        FROM usuarios
-       WHERE (LOWER(username) = $1 OR LOWER(email) = $1) AND password_hash = $2`,
-      [cleanUser, passHash]
+       WHERE LOWER(username) = $1 OR LOWER(email) = $1`,
+      [cleanUser]
     );
 
     if (result.rowCount === 0) {
       return res.status(401).json({ error: 'Usuario, correo o contraseña incorrectos.' });
     }
 
-    const user = result.rows[0];
-    if (!user.activo) {
+    const row = result.rows[0];
+    if (!verifyPassword(password, row.password_hash)) {
+      return res.status(401).json({ error: 'Usuario, correo o contraseña incorrectos.' });
+    }
+
+    if (!row.activo) {
       return res.status(403).json({
         error: 'Esta cuenta de usuario se encuentra desactivada. Contacta al Administrador.',
       });
     }
 
+    // Migrar automáticamente hashes SHA-256 antiguos a scrypt con salt
+    if (row.password_hash && !row.password_hash.startsWith('scrypt:')) {
+      const upgradedHash = hashPassword(password);
+      await pool
+        .query('UPDATE usuarios SET password_hash = $1 WHERE id = $2', [upgradedHash, row.id])
+        .catch(() => {});
+    }
+
+    const { password_hash, ...user } = row;
     const token = createAuthToken(user.id, user.username);
     res.json({
       message: `Bienvenido, ${user.nombre_completo}`,
@@ -166,7 +264,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     }
 
     const user = result.rows[0];
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const code = String(crypto.randomInt(100000, 1000000));
 
     await pool.query(
       `UPDATE usuarios
@@ -180,10 +278,9 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     );
 
     res.json({
-      message: `Código de recuperación generado para ${user.email || user.username}.`,
+      message: `Código de recuperación generado para ${user.email || user.username}. Revisa la consola del servidor o solicita el código al Administrador.`,
       username: user.username,
       email: user.email || '',
-      reset_code_preview: code,
     });
   } catch (error) {
     console.error('Error en forgot-password:', error.message);
@@ -252,38 +349,12 @@ app.post('/api/auth/reset-password', async (req, res) => {
 });
 
 // GET /api/auth/me - Obtener sesión actual validando contra PostgreSQL
-app.get('/api/auth/me', async (req, res) => {
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  const decoded = verifyAuthToken(token);
-
-  if (!decoded) {
-    return res.status(401).json({ error: 'Sesión no válida o expirada.' });
-  }
-
-  try {
-    const result = await pool.query(
-      `SELECT
-         id, username, email, nombre_completo, cargo, rol,
-         puede_crear, puede_editar, puede_eliminar,
-         puede_computos, puede_exportar, puede_usuarios, activo
-       FROM usuarios
-       WHERE id = $1`,
-      [decoded.id]
-    );
-
-    if (result.rowCount === 0 || !result.rows[0].activo) {
-      return res.status(401).json({ error: 'Usuario no encontrado o inactivo.' });
-    }
-
-    res.json({ user: result.rows[0] });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al verificar sesión.' });
-  }
+app.get('/api/auth/me', requireAuth, async (req, res) => {
+  res.json({ user: req.user });
 });
 
 // GET /api/usuarios - Listar todos los usuarios y sus permisos (para el panel de administración)
-app.get('/api/usuarios', async (req, res) => {
+app.get('/api/usuarios', requirePerm('puede_usuarios'), async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT
@@ -302,7 +373,7 @@ app.get('/api/usuarios', async (req, res) => {
 });
 
 // POST /api/usuarios - Crear nuevo usuario con rol y permisos
-app.post('/api/usuarios', async (req, res) => {
+app.post('/api/usuarios', requirePerm('puede_usuarios'), async (req, res) => {
   const {
     username,
     email = '',
@@ -370,7 +441,7 @@ app.post('/api/usuarios', async (req, res) => {
 });
 
 // PUT /api/usuarios/:id - Actualizar rol, permisos, datos o contraseña de un usuario
-app.put('/api/usuarios/:id', async (req, res) => {
+app.put('/api/usuarios/:id', requirePerm('puede_usuarios'), async (req, res) => {
   const { id } = req.params;
   const {
     username,
@@ -496,8 +567,13 @@ app.put('/api/usuarios/:id', async (req, res) => {
 });
 
 // DELETE /api/usuarios/:id - Eliminar un usuario
-app.delete('/api/usuarios/:id', async (req, res) => {
+app.delete('/api/usuarios/:id', requirePerm('puede_usuarios'), async (req, res) => {
   const { id } = req.params;
+  if (req.user && Number(req.user.id) === Number(id)) {
+    return res.status(400).json({
+      error: 'No puedes eliminar tu propia cuenta activa.',
+    });
+  }
   try {
     const checkAdmin = await pool.query('SELECT username FROM usuarios WHERE id = $1', [id]);
     if (
@@ -529,7 +605,7 @@ app.delete('/api/usuarios/:id', async (req, res) => {
 // ENDPOINTS DE SUBIDA DE IMÁGENES Y PDF DESDE PC
 // ============================================================================
 
-app.post('/api/upload', (req, res) => {
+app.post('/api/upload', requirePerm('puede_editar', 'puede_crear'), (req, res) => {
   uploadImage.single('imagen')(req, res, (err) => {
     if (err) {
       return res.status(400).json({
@@ -551,7 +627,7 @@ app.post('/api/upload', (req, res) => {
   });
 });
 
-app.post('/api/materiales/:id/upload-datasheet', (req, res) => {
+app.post('/api/materiales/:id/upload-datasheet', requirePerm('puede_editar'), (req, res) => {
   uploadPdf.single('datasheet')(req, res, async (err) => {
     if (err) {
       return res.status(400).json({
@@ -568,6 +644,9 @@ app.post('/api/materiales/:id/upload-datasheet', (req, res) => {
     const pdfUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
     try {
+      const prevRes = await pool.query('SELECT datasheet_url FROM materiales WHERE id = $1', [id]);
+      const oldPdfUrl = prevRes.rows[0]?.datasheet_url;
+
       const result = await pool.query(
         `UPDATE materiales
          SET datasheet_url = $1, updated_at = CURRENT_TIMESTAMP
@@ -578,6 +657,10 @@ app.post('/api/materiales/:id/upload-datasheet', (req, res) => {
 
       if (result.rowCount === 0) {
         return res.status(404).json({ error: 'Material no encontrado en PostgreSQL.' });
+      }
+
+      if (oldPdfUrl && oldPdfUrl !== pdfUrl) {
+        await removeOldUploadFile(oldPdfUrl, id);
       }
 
       res.status(201).json({
@@ -595,11 +678,14 @@ app.post('/api/materiales/:id/upload-datasheet', (req, res) => {
   });
 });
 
-app.put('/api/materiales/:id/datasheet', async (req, res) => {
+app.put('/api/materiales/:id/datasheet', requirePerm('puede_editar'), async (req, res) => {
   const { id } = req.params;
   const { datasheet_url } = req.body;
 
   try {
+    const prevRes = await pool.query('SELECT datasheet_url FROM materiales WHERE id = $1', [id]);
+    const oldPdfUrl = prevRes.rows[0]?.datasheet_url;
+
     const cleanUrl = datasheet_url && datasheet_url.trim() !== '' ? datasheet_url.trim() : null;
     const result = await pool.query(
       `UPDATE materiales
@@ -611,6 +697,10 @@ app.put('/api/materiales/:id/datasheet', async (req, res) => {
 
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Material no encontrado en PostgreSQL.' });
+    }
+
+    if (oldPdfUrl && oldPdfUrl !== cleanUrl) {
+      await removeOldUploadFile(oldPdfUrl, id);
     }
 
     res.json({
@@ -660,7 +750,7 @@ app.get('/api/familias', async (req, res) => {
 });
 
 // POST /api/familias - Crear nueva familia de materiales
-app.post('/api/familias', async (req, res) => {
+app.post('/api/familias', requirePerm('puede_crear', 'puede_editar', 'puede_usuarios'), async (req, res) => {
   const {
     nombre,
     codigo = '',
@@ -719,7 +809,7 @@ app.post('/api/familias', async (req, res) => {
 });
 
 // PUT /api/familias/:id - Editar una familia y actualizar en cascada los materiales si cambia de nombre
-app.put('/api/familias/:id', async (req, res) => {
+app.put('/api/familias/:id', requirePerm('puede_crear', 'puede_editar', 'puede_usuarios'), async (req, res) => {
   const { id } = req.params;
   const {
     nombre,
@@ -826,7 +916,7 @@ app.put('/api/familias/:id', async (req, res) => {
 });
 
 // DELETE /api/familias/:id - Eliminar una familia (o reasignar materiales si se indica)
-app.delete('/api/familias/:id', async (req, res) => {
+app.delete('/api/familias/:id', requirePerm('puede_eliminar', 'puede_usuarios'), async (req, res) => {
   const { id } = req.params;
   const { reasignar_a } = req.query;
 
@@ -852,6 +942,12 @@ app.delete('/api/familias/:id', async (req, res) => {
         await client.query(
           `UPDATE materiales
            SET categoria = $1, updated_at = CURRENT_TIMESTAMP
+           WHERE LOWER(TRIM(categoria)) = LOWER(TRIM($2))`,
+          [reasignar_a.trim(), fam.nombre]
+        );
+        await client.query(
+          `UPDATE requisicion_items
+           SET categoria = $1
            WHERE LOWER(TRIM(categoria)) = LOWER(TRIM($2))`,
           [reasignar_a.trim(), fam.nombre]
         );
@@ -926,7 +1022,7 @@ app.get('/api/materiales', async (req, res) => {
   }
 });
 
-app.post('/api/materiales', async (req, res) => {
+app.post('/api/materiales', requirePerm('puede_crear'), async (req, res) => {
   const {
     titulo,
     categoria,
@@ -1024,7 +1120,7 @@ app.post('/api/materiales', async (req, res) => {
   }
 });
 
-app.put('/api/materiales/:id', async (req, res) => {
+app.put('/api/materiales/:id', requirePerm('puede_editar'), async (req, res) => {
   const { id } = req.params;
   const {
     titulo,
@@ -1050,6 +1146,12 @@ app.put('/api/materiales/:id', async (req, res) => {
   }
 
   try {
+    const prevRes = await pool.query(
+      'SELECT imagen_url FROM materiales WHERE id = $1',
+      [id]
+    );
+    const oldImgUrl = prevRes.rows[0]?.imagen_url;
+
     const cleanImg = imagen_url && imagen_url.trim() !== '' ? imagen_url.trim() : null;
     const cleanPdf = datasheet_url && datasheet_url.trim() !== '' ? datasheet_url.trim() : null;
     const cleanProvUrl = proveedor_url && proveedor_url.trim() !== '' ? proveedor_url.trim() : null;
@@ -1121,6 +1223,10 @@ app.put('/api/materiales/:id', async (req, res) => {
       return res.status(404).json({ error: 'Material no encontrado en PostgreSQL.' });
     }
 
+    if (oldImgUrl && oldImgUrl !== cleanImg) {
+      await removeOldUploadFile(oldImgUrl, id);
+    }
+
     res.json({
       message: 'Material actualizado correctamente en PostgreSQL.',
       material: result.rows[0],
@@ -1134,7 +1240,7 @@ app.put('/api/materiales/:id', async (req, res) => {
   }
 });
 
-app.patch('/api/materiales/:id/stock', async (req, res) => {
+app.patch('/api/materiales/:id/stock', requirePerm('puede_editar'), async (req, res) => {
   const { id } = req.params;
   const { en_stock } = req.body;
 
@@ -1164,12 +1270,12 @@ app.patch('/api/materiales/:id/stock', async (req, res) => {
   }
 });
 
-app.delete('/api/materiales/:id', async (req, res) => {
+app.delete('/api/materiales/:id', requirePerm('puede_eliminar'), async (req, res) => {
   const { id } = req.params;
 
   try {
     const result = await pool.query(
-      'DELETE FROM materiales WHERE id = $1 RETURNING id, titulo',
+      'DELETE FROM materiales WHERE id = $1 RETURNING id, titulo, imagen_url, datasheet_url',
       [id]
     );
 
@@ -1177,9 +1283,17 @@ app.delete('/api/materiales/:id', async (req, res) => {
       return res.status(404).json({ error: 'Material no encontrado en PostgreSQL.' });
     }
 
+    const deleted = result.rows[0];
+    if (deleted.imagen_url) {
+      await removeOldUploadFile(deleted.imagen_url, id);
+    }
+    if (deleted.datasheet_url) {
+      await removeOldUploadFile(deleted.datasheet_url, id);
+    }
+
     res.json({
       message: 'Material eliminado de PostgreSQL correctamente.',
-      deleted: result.rows[0],
+      deleted,
     });
   } catch (error) {
     console.error('Error al eliminar material en PostgreSQL:', error.message);
@@ -1190,11 +1304,14 @@ app.delete('/api/materiales/:id', async (req, res) => {
   }
 });
 
-app.put('/api/materiales/:id/imagen', async (req, res) => {
+app.put('/api/materiales/:id/imagen', requirePerm('puede_editar'), async (req, res) => {
   const { id } = req.params;
   const { imagen_url } = req.body;
 
   try {
+    const prevRes = await pool.query('SELECT imagen_url FROM materiales WHERE id = $1', [id]);
+    const oldImgUrl = prevRes.rows[0]?.imagen_url;
+
     const cleanUrl = imagen_url && imagen_url.trim() !== '' ? imagen_url.trim() : null;
     const result = await pool.query(
       `UPDATE materiales
@@ -1206,6 +1323,10 @@ app.put('/api/materiales/:id/imagen', async (req, res) => {
 
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Material no encontrado en PostgreSQL.' });
+    }
+
+    if (oldImgUrl && oldImgUrl !== cleanUrl) {
+      await removeOldUploadFile(oldImgUrl, id);
     }
 
     res.json({
@@ -1231,7 +1352,10 @@ app.get('/api/requisiciones', async (req, res) => {
       'SELECT * FROM requisiciones ORDER BY created_at DESC'
     );
     const itemsResult = await pool.query(
-      'SELECT * FROM requisicion_items ORDER BY id ASC'
+      `SELECT ri.*, m.precio_referencia
+       FROM requisicion_items ri
+       LEFT JOIN materiales m ON m.id = ri.material_id
+       ORDER BY ri.id ASC`
     );
 
     const itemsByReq = {};
@@ -1246,6 +1370,7 @@ app.get('/api/requisiciones', async (req, res) => {
         category: item.categoria,
         unidad: item.unidad,
         cantidad: Number(item.cantidad),
+        precio_referencia: item.precio_referencia != null ? Number(item.precio_referencia) : null,
         nota_tecnica: item.nota_tecnica || '',
       });
     }
@@ -1265,7 +1390,7 @@ app.get('/api/requisiciones', async (req, res) => {
   }
 });
 
-app.post('/api/requisiciones', async (req, res) => {
+app.post('/api/requisiciones', requirePerm('puede_computos'), async (req, res) => {
   const {
     proyecto,
     solicitante = '',
@@ -1290,9 +1415,14 @@ app.post('/api/requisiciones', async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    const countRes = await client.query('SELECT COUNT(*)::int AS total FROM requisiciones');
-    const nextNum = (countRes.rows[0].total || 0) + 1;
     const year = new Date().getFullYear();
+    const maxRes = await client.query(
+      `SELECT COALESCE(MAX(CAST(SUBSTRING(codigo FROM 'REQ-\\d{4}-(\\d+)$') AS INTEGER)), 0) AS max_num
+       FROM requisiciones
+       WHERE codigo LIKE $1`,
+      [`REQ-${year}-%`]
+    );
+    const nextNum = (Number(maxRes.rows[0]?.max_num) || 0) + 1;
     const codigo = `REQ-${year}-${String(nextNum).padStart(3, '0')}`;
 
     const reqInsert = await client.query(
@@ -1336,6 +1466,7 @@ app.post('/api/requisiciones', async (req, res) => {
         category: row.categoria,
         unidad: row.unidad,
         cantidad: Number(row.cantidad),
+        precio_referencia: item.precio_referencia ?? null,
         nota_tecnica: row.nota_tecnica || '',
       });
     }
@@ -1361,7 +1492,113 @@ app.post('/api/requisiciones', async (req, res) => {
   }
 });
 
-app.delete('/api/requisiciones/:id', async (req, res) => {
+// PUT /api/requisiciones/:id - Actualizar una requisición existente
+app.put('/api/requisiciones/:id', requirePerm('puede_computos'), async (req, res) => {
+  const { id } = req.params;
+  const {
+    proyecto,
+    solicitante = '',
+    ubicacion = '',
+    nivel_tension = '13.8 kV / BT',
+    observaciones = '',
+    items = [],
+  } = req.body;
+
+  if (!proyecto || !proyecto.trim()) {
+    return res.status(400).json({
+      error: 'El nombre del proyecto u obra es obligatorio.',
+    });
+  }
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({
+      error: 'La requisición debe contener al menos un material.',
+    });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const reqUpdate = await client.query(
+      `UPDATE requisiciones
+       SET
+         proyecto = $1,
+         solicitante = $2,
+         ubicacion = $3,
+         nivel_tension = $4,
+         observaciones = $5
+       WHERE id = $6
+       RETURNING *`,
+      [
+        proyecto.trim(),
+        solicitante.trim(),
+        ubicacion.trim(),
+        nivel_tension.trim(),
+        observaciones.trim(),
+        id,
+      ]
+    );
+
+    if (reqUpdate.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Requisición no encontrada.' });
+    }
+
+    const updatedReq = reqUpdate.rows[0];
+    await client.query('DELETE FROM requisicion_items WHERE requisicion_id = $1', [id]);
+
+    const insertedItems = [];
+    for (const item of items) {
+      const itemRes = await client.query(
+        `INSERT INTO requisicion_items
+           (requisicion_id, material_id, titulo, categoria, unidad, cantidad, nota_tecnica)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         RETURNING *`,
+        [
+          updatedReq.id,
+          item.material_id || item.id || null,
+          item.title || item.titulo,
+          item.category || item.categoria,
+          item.unidad || 'PZA',
+          Number(item.cantidad) || 1,
+          (item.nota_tecnica || '').trim(),
+        ]
+      );
+      const row = itemRes.rows[0];
+      insertedItems.push({
+        id: row.id,
+        material_id: row.material_id,
+        title: row.titulo,
+        category: row.categoria,
+        unidad: row.unidad,
+        cantidad: Number(row.cantidad),
+        precio_referencia: item.precio_referencia ?? null,
+        nota_tecnica: row.nota_tecnica || '',
+      });
+    }
+
+    await client.query('COMMIT');
+
+    res.json({
+      message: `Requisición ${updatedReq.codigo} actualizada exitosamente en PostgreSQL.`,
+      requisicion: {
+        ...updatedReq,
+        items: insertedItems,
+      },
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error al actualizar requisición en PostgreSQL:', error.message);
+    res.status(500).json({
+      error: 'No se pudo actualizar la requisición en PostgreSQL.',
+      details: error.message,
+    });
+  } finally {
+    client.release();
+  }
+});
+
+app.delete('/api/requisiciones/:id', requirePerm('puede_computos'), async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query(

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
-const UPLOAD_API_URL = 'http://localhost:3000/api/upload';
+import { apiFetch, resolveMediaUrl } from '../utils/api';
 
 export const CATEGORIES = [
   'Abrazaderas',
@@ -129,6 +128,9 @@ export default function MaterialModal({
   const [categoria, setCategoria] = useState(CATEGORIES[0]);
   const [descripcion, setDescripcion] = useState('');
   const [especificaciones, setEspecificaciones] = useState('');
+  const [normaTecnica, setNormaTecnica] = useState('');
+  const [nivelTension, setNivelTension] = useState('');
+  const [materialBase, setMaterialBase] = useState('');
   const [imagenUrl, setImagenUrl] = useState('');
   const [proveedorNombre, setProveedorNombre] = useState('');
   const [proveedorContacto, setProveedorContacto] = useState('');
@@ -149,6 +151,9 @@ export default function MaterialModal({
         setCategoria(item.category || defaultFam);
         setDescripcion(item.description || '');
         setEspecificaciones(item.specs || '');
+        setNormaTecnica(item.norma_tecnica || '');
+        setNivelTension(item.nivel_tension || '');
+        setMaterialBase(item.material_base || '');
         setImagenUrl(item.imagen_url || '');
         setProveedorNombre(
           item.proveedor_nombre || getFamilyDefaultSupplier(item.category) || ''
@@ -164,6 +169,9 @@ export default function MaterialModal({
         setCategoria(defaultFam);
         setDescripcion(getFamilyDefaultDesc(defaultFam));
         setEspecificaciones('');
+        setNormaTecnica('');
+        setNivelTension('');
+        setMaterialBase('');
         setImagenUrl('');
         setProveedorNombre(getFamilyDefaultSupplier(defaultFam));
         setProveedorContacto('Dpto. de Ventas Industriales / Procura Eléctrica');
@@ -186,7 +194,7 @@ export default function MaterialModal({
       const formData = new FormData();
       formData.append('imagen', file);
 
-      const res = await fetch(UPLOAD_API_URL, {
+      const res = await apiFetch('/upload', {
         method: 'POST',
         body: formData,
       });
@@ -230,6 +238,9 @@ export default function MaterialModal({
           descripcion.trim() || getFamilyDefaultDesc(categoria),
         especificaciones:
           especificaciones.trim() || generateSpecsFromTitle(titulo),
+        norma_tecnica: normaTecnica.trim() || null,
+        nivel_tension: nivelTension.trim() || null,
+        material_base: materialBase.trim() || null,
         imagen_url: imagenUrl.trim() || null,
         proveedor_nombre:
           proveedorNombre.trim() || getFamilyDefaultSupplier(categoria) || null,
@@ -395,6 +406,46 @@ export default function MaterialModal({
             />
           </div>
 
+          {/* Parámetros de Ingeniería Opcionales (Material Base, Tensión, Norma) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                Material Constructivo
+              </label>
+              <input
+                type="text"
+                value={materialBase}
+                onChange={(e) => setMaterialBase(e.target.value)}
+                placeholder="Ej. Acero Galvanizado ASTM A153"
+                className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                Nivel de Tensión Nominal
+              </label>
+              <input
+                type="text"
+                value={nivelTension}
+                onChange={(e) => setNivelTension(e.target.value)}
+                placeholder="Ej. Media Tensión 13.8 kV / 24 kV"
+                className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                Normas Técnicas de Referencia
+              </label>
+              <input
+                type="text"
+                value={normaTecnica}
+                onChange={(e) => setNormaTecnica(e.target.value)}
+                placeholder="Ej. CORPOELEC / ANSI C135.1"
+                className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
           {/* Sección de Proveedor de Referencia y Procura */}
           <div className="bg-amber-50/60 p-3.5 rounded-xl border border-amber-200 space-y-3">
             <h4 className="text-xs font-bold text-amber-900 uppercase flex items-center gap-1.5">
@@ -504,7 +555,7 @@ export default function MaterialModal({
             {imagenUrl.trim() && (
               <div className="mt-2 border border-slate-200 rounded-lg p-2 bg-slate-50 text-center">
                 <img
-                  src={imagenUrl.trim()}
+                  src={resolveMediaUrl(imagenUrl)}
                   alt="Vista previa"
                   className="h-24 object-contain mx-auto rounded bg-white p-1 border border-slate-100"
                   onError={(e) => {
