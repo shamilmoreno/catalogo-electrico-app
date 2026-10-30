@@ -149,22 +149,43 @@ export default function RequisitionModal({
       ['Proyecto / Obra:', proyecto || 'Sin especificar', 'Fecha:', fecha],
       ['Solicitante / Ing.:', solicitante || 'Sin especificar', 'Nivel de Tensión:', nivelTension],
       ['Ubicación / Circuito:', ubicacion || 'Sin especificar', 'Total Renglones:', totalRenglones],
-      ['Observaciones:', observaciones || 'Ninguna'],
+      ['Observaciones:', observaciones || 'Ninguna', 'Presupuesto Estimado (USD):', totalEstimadoUsd.toFixed(2)],
       [],
-      ['ITEM', 'ID CATÁLOGO', 'DESCRIPCIÓN / NOMENCLATURA TÉCNICA', 'FAMILIA', 'UNIDAD', 'CANTIDAD', 'ESTRUCTURA / NOTA DE CAMPO'],
+      [
+        'ITEM',
+        'ID CATÁLOGO',
+        'DESCRIPCIÓN / NOMENCLATURA TÉCNICA',
+        'FAMILIA',
+        'UNIDAD',
+        'CANTIDAD',
+        'PRECIO UNIT. REF. (USD)',
+        'SUBTOTAL EST. (USD)',
+        'ESTRUCTURA / NOTA DE CAMPO',
+      ],
     ];
 
-    const itemLines = reqItems.map((it, idx) => [
-      idx + 1,
-      `#${it.material_id || it.id}`,
-      `"${(it.title || '').replace(/"/g, '""')}"`,
-      `"${(it.category || '').replace(/"/g, '""')}"`,
-      it.unidad || 'PZA',
-      it.cantidad,
-      `"${(it.nota_tecnica || '').replace(/"/g, '""')}"`,
-    ]);
+    const itemLines = reqItems.map((it, idx) => {
+      const unitPrice = Number(it.precio_referencia) || 0;
+      const subtotal = (Number(it.cantidad) || 0) * unitPrice;
+      return [
+        idx + 1,
+        `#${it.material_id || it.id}`,
+        `"${(it.title || '').replace(/"/g, '""')}"`,
+        `"${(it.category || '').replace(/"/g, '""')}"`,
+        it.unidad || 'PZA',
+        it.cantidad,
+        unitPrice > 0 ? unitPrice.toFixed(2) : '0.00',
+        subtotal > 0 ? subtotal.toFixed(2) : '0.00',
+        `"${(it.nota_tecnica || '').replace(/"/g, '""')}"`,
+      ];
+    });
 
-    const allRows = [...headerLines, ...itemLines]
+    const footerLines = [
+      [],
+      ['', '', '', '', 'TOTALES:', totalUnidades, '', totalEstimadoUsd.toFixed(2), ''],
+    ];
+
+    const allRows = [...headerLines, ...itemLines, ...footerLines]
       .map((row) => row.join(';'))
       .join('\r\n');
 
@@ -194,8 +215,10 @@ export default function RequisitionModal({
     });
 
     const rowsHtml = reqItems
-      .map(
-        (it, idx) => `
+      .map((it, idx) => {
+        const unitPrice = Number(it.precio_referencia) || 0;
+        const subtotal = (Number(it.cantidad) || 0) * unitPrice;
+        return `
         <tr>
           <td style="text-align:center;font-weight:600;">${String(idx + 1).padStart(2, '0')}</td>
           <td style="text-align:center;font-family:monospace;">#${it.material_id || it.id}</td>
@@ -203,12 +226,14 @@ export default function RequisitionModal({
           <td>${it.category}</td>
           <td style="text-align:center;font-weight:600;">${it.unidad || 'PZA'}</td>
           <td style="text-align:right;font-weight:700;font-size:13px;">${it.cantidad}</td>
+          <td style="text-align:right;font-family:monospace;">${unitPrice > 0 ? `$${unitPrice.toFixed(2)}` : '-'}</td>
+          <td style="text-align:right;font-family:monospace;font-weight:700;">${subtotal > 0 ? `$${subtotal.toFixed(2)}` : '-'}</td>
           <td>${it.nota_tecnica || '-'}</td>
-        </tr>`
-      )
+        </tr>`;
+      })
       .join('');
 
-    const printWindow = window.open('', '_blank', 'width=960,height=750');
+    const printWindow = window.open('', '_blank', 'width=980,height=750');
     if (!printWindow) return;
 
     printWindow.document.write(`
@@ -226,9 +251,10 @@ export default function RequisitionModal({
           .meta-item { font-size: 12px; }
           .meta-label { font-weight: 700; color: #334155; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
-          th { background: #0f172a; color: #ffffff; font-size: 11px; text-transform: uppercase; padding: 8px 6px; border: 1px solid #0f172a; }
-          td { padding: 7px 6px; border: 1px solid #cbd5e1; font-size: 11.5px; }
+          th { background: #0f172a; color: #ffffff; font-size: 10.5px; text-transform: uppercase; padding: 8px 6px; border: 1px solid #0f172a; }
+          td { padding: 7px 6px; border: 1px solid #cbd5e1; font-size: 11px; }
           tr:nth-child(even) { background: #f8fafc; }
+          .total-row td { background: #f1f5f9; font-weight: 800; border-top: 2px solid #0f172a; }
           .signatures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 55px; page-break-inside: avoid; }
           .sig-box { border-top: 1px solid #0f172a; text-align: center; padding-top: 6px; font-size: 11px; }
         </style>
@@ -243,6 +269,7 @@ export default function RequisitionModal({
             <div><strong>Fecha:</strong> ${fecha}</div>
             <div><strong>Total Renglones:</strong> ${totalRenglones}</div>
             <div><strong>Total Unidades:</strong> ${totalUnidades}</div>
+            ${totalEstimadoUsd > 0 ? `<div><strong>Total Ref. USD:</strong> $${totalEstimadoUsd.toFixed(2)}</div>` : ''}
           </div>
         </div>
 
@@ -257,17 +284,26 @@ export default function RequisitionModal({
         <table>
           <thead>
             <tr>
-              <th style="width:40px;">Ítem</th>
-              <th style="width:65px;">Código</th>
+              <th style="width:36px;">Ítem</th>
+              <th style="width:58px;">Código</th>
               <th>Descripción / Nomenclatura Técnica del Material</th>
-              <th style="width:160px;">Familia</th>
-              <th style="width:55px;">Und.</th>
-              <th style="width:65px;">Cant.</th>
-              <th style="width:140px;">Estructura / Apoyo</th>
+              <th style="width:140px;">Familia</th>
+              <th style="width:48px;">Und.</th>
+              <th style="width:55px;">Cant.</th>
+              <th style="width:72px;">P. Unit ($)</th>
+              <th style="width:78px;">Subtotal ($)</th>
+              <th style="width:125px;">Estructura / Apoyo</th>
             </tr>
           </thead>
           <tbody>
             ${rowsHtml}
+            <tr class="total-row">
+              <td colspan="5" style="text-align:right;">TOTALES ESTIMADOS DE LA REQUISICIÓN:</td>
+              <td style="text-align:right;">${totalUnidades}</td>
+              <td></td>
+              <td style="text-align:right;font-family:monospace;">$${totalEstimadoUsd.toFixed(2)}</td>
+              <td></td>
+            </tr>
           </tbody>
         </table>
 
@@ -339,14 +375,19 @@ export default function RequisitionModal({
               <i className="fa-solid fa-clipboard-list text-xl"></i>
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold flex items-center gap-2 flex-wrap">
                 <span>Módulo de Cómputos Métricos y Requisición de Materiales</span>
                 <span className="bg-indigo-500/30 text-indigo-200 text-xs px-2.5 py-0.5 rounded-full border border-indigo-400/30">
                   {totalRenglones} renglones • {totalUnidades} unds.
                 </span>
+                {editingReqCodigo && (
+                  <span className="bg-amber-500/20 text-amber-300 text-xs font-mono px-2.5 py-0.5 rounded-full border border-amber-400/30">
+                    Editando: {editingReqCodigo}
+                  </span>
+                )}
               </h2>
               <p className="text-xs text-slate-400">
-                Armado de listas de materiales por obra, persistencia en PostgreSQL y exportación a Excel / PDF
+                Armado de listas de materiales por obra, cálculo de costos estimados, persistencia en PostgreSQL y exportación a Excel / PDF
               </p>
             </div>
           </div>
@@ -515,108 +556,133 @@ export default function RequisitionModal({
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="bg-slate-800 text-white text-[11px] uppercase">
-                          <th className="py-2.5 px-3 text-center w-12">#</th>
-                          <th className="py-2.5 px-3 w-20">ID Cat.</th>
+                          <th className="py-2.5 px-3 text-center w-10">#</th>
+                          <th className="py-2.5 px-3 w-16">ID Cat.</th>
                           <th className="py-2.5 px-3">Material / Nomenclatura Técnica</th>
-                          <th className="py-2.5 px-3 w-28 text-center">Unidad</th>
-                          <th className="py-2.5 px-3 w-36 text-center">Cantidad</th>
-                          <th className="py-2.5 px-3 w-56">Estructura / Apoyo (Nota)</th>
-                          <th className="py-2.5 px-3 w-12 text-center"></th>
+                          <th className="py-2.5 px-3 w-24 text-center">Unidad</th>
+                          <th className="py-2.5 px-3 w-32 text-center">Cantidad</th>
+                          <th className="py-2.5 px-3 w-28 text-right">P. Unit ($)</th>
+                          <th className="py-2.5 px-3 w-28 text-right">Subtotal ($)</th>
+                          <th className="py-2.5 px-3 w-48">Estructura / Apoyo</th>
+                          <th className="py-2.5 px-3 w-10 text-center"></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 text-xs">
-                        {reqItems.map((it, idx) => (
-                          <tr key={it.material_id || it.id} className="hover:bg-slate-50">
-                            <td className="py-2.5 px-3 text-center font-bold text-slate-500">
-                              {String(idx + 1).padStart(2, '0')}
-                            </td>
-                            <td className="py-2.5 px-3 font-mono text-slate-600 font-semibold">
-                              #{it.material_id || it.id}
-                            </td>
-                            <td className="py-2.5 px-3">
-                              <div className="font-bold text-slate-900">{it.title}</div>
-                              <div className="text-[10px] text-slate-500">{it.category}</div>
-                            </td>
-                            <td className="py-2.5 px-3 text-center">
-                              <select
-                                value={it.unidad || 'PZA'}
-                                onChange={(e) =>
-                                  onUpdateItem(it.material_id || it.id, {
-                                    unidad: e.target.value,
-                                  })
-                                }
-                                className="px-2 py-1 border border-slate-300 rounded bg-white text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-indigo-500"
-                              >
-                                {UNIDADES.map((u) => (
-                                  <option key={u} value={u}>
-                                    {u}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="py-2.5 px-3">
-                              <div className="flex items-center justify-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    onUpdateItem(it.material_id || it.id, {
-                                      cantidad: Math.max(1, (Number(it.cantidad) || 1) - 1),
-                                    })
-                                  }
-                                  className="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center cursor-pointer"
-                                >
-                                  -
-                                </button>
-                                <input
-                                  type="number"
-                                  min="0.1"
-                                  step="any"
-                                  value={it.cantidad}
+                        {reqItems.map((it, idx) => {
+                          const unitPrice = Number(it.precio_referencia) || 0;
+                          const subtotal = (Number(it.cantidad) || 0) * unitPrice;
+                          return (
+                            <tr key={it.material_id || it.id} className="hover:bg-slate-50">
+                              <td className="py-2.5 px-3 text-center font-bold text-slate-500">
+                                {String(idx + 1).padStart(2, '0')}
+                              </td>
+                              <td className="py-2.5 px-3 font-mono text-slate-600 font-semibold">
+                                #{it.material_id || it.id}
+                              </td>
+                              <td className="py-2.5 px-3">
+                                <div className="font-bold text-slate-900">{it.title}</div>
+                                <div className="text-[10px] text-slate-500">{it.category}</div>
+                              </td>
+                              <td className="py-2.5 px-3 text-center">
+                                <select
+                                  value={it.unidad || 'PZA'}
                                   onChange={(e) =>
                                     onUpdateItem(it.material_id || it.id, {
-                                      cantidad: e.target.value,
+                                      unidad: e.target.value,
                                     })
                                   }
-                                  className="w-16 text-center px-1.5 py-1 border border-slate-300 rounded font-bold text-slate-900"
+                                  className="px-2 py-1 border border-slate-300 rounded bg-white text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-indigo-500"
+                                >
+                                  {UNIDADES.map((u) => (
+                                    <option key={u} value={u}>
+                                      {u}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td className="py-2.5 px-3">
+                                <div className="flex items-center justify-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      onUpdateItem(it.material_id || it.id, {
+                                        cantidad: Math.max(1, (Number(it.cantidad) || 1) - 1),
+                                      })
+                                    }
+                                    className="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center cursor-pointer"
+                                  >
+                                    -
+                                  </button>
+                                  <input
+                                    type="number"
+                                    min="0.1"
+                                    step="any"
+                                    value={it.cantidad}
+                                    onChange={(e) =>
+                                      onUpdateItem(it.material_id || it.id, {
+                                        cantidad: e.target.value,
+                                      })
+                                    }
+                                    className="w-14 text-center px-1 py-1 border border-slate-300 rounded font-bold text-slate-900"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      onUpdateItem(it.material_id || it.id, {
+                                        cantidad: (Number(it.cantidad) || 0) + 1,
+                                      })
+                                    }
+                                    className="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center cursor-pointer"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </td>
+                              <td className="py-2.5 px-3 text-right">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={it.precio_referencia ?? ''}
+                                  onChange={(e) =>
+                                    onUpdateItem(it.material_id || it.id, {
+                                      precio_referencia:
+                                        e.target.value === '' ? null : e.target.value,
+                                    })
+                                  }
+                                  placeholder="0.00"
+                                  className="w-20 text-right px-1.5 py-1 border border-slate-200 rounded font-mono text-xs text-slate-800 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                                 />
+                              </td>
+                              <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-700">
+                                {subtotal > 0 ? `$${subtotal.toFixed(2)}` : '-'}
+                              </td>
+                              <td className="py-2.5 px-3">
+                                <input
+                                  type="text"
+                                  value={it.nota_tecnica || ''}
+                                  onChange={(e) =>
+                                    onUpdateItem(it.material_id || it.id, {
+                                      nota_tecnica: e.target.value,
+                                    })
+                                  }
+                                  placeholder="Ej. Poste P-05 / Retenida"
+                                  className="w-full px-2 py-1 border border-slate-200 rounded text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                                />
+                              </td>
+                              <td className="py-2.5 px-3 text-center">
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    onUpdateItem(it.material_id || it.id, {
-                                      cantidad: (Number(it.cantidad) || 0) + 1,
-                                    })
-                                  }
-                                  className="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center cursor-pointer"
+                                  onClick={() => onRemoveItem(it.material_id || it.id)}
+                                  className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                                  title="Quitar renglón"
                                 >
-                                  +
+                                  <i className="fa-solid fa-trash-can"></i>
                                 </button>
-                              </div>
-                            </td>
-                            <td className="py-2.5 px-3">
-                              <input
-                                type="text"
-                                value={it.nota_tecnica || ''}
-                                onChange={(e) =>
-                                  onUpdateItem(it.material_id || it.id, {
-                                    nota_tecnica: e.target.value,
-                                  })
-                                }
-                                placeholder="Ej. Poste P-05 / Retenida"
-                                className="w-full px-2 py-1 border border-slate-200 rounded text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                              />
-                            </td>
-                            <td className="py-2.5 px-3 text-center">
-                              <button
-                                type="button"
-                                onClick={() => onRemoveItem(it.material_id || it.id)}
-                                className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
-                                title="Quitar renglón"
-                              >
-                                <i className="fa-solid fa-trash-can"></i>
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

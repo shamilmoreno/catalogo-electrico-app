@@ -52,6 +52,26 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [itemsPerPage, setItemsPerPage] = useState('48');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  // Al imprimir el catálogo (botón o Ctrl+P), renderizar todos los ítems filtrados y no solo la página actual
+  useEffect(() => {
+    const onBeforePrint = () => setIsPrinting(true);
+    const onAfterPrint = () => setIsPrinting(false);
+    window.addEventListener('beforeprint', onBeforePrint);
+    window.addEventListener('afterprint', onAfterPrint);
+    return () => {
+      window.removeEventListener('beforeprint', onBeforePrint);
+      window.removeEventListener('afterprint', onAfterPrint);
+    };
+  }, []);
+
+  const handlePrintCatalog = () => {
+    setIsPrinting(true);
+    setTimeout(() => {
+      window.print();
+    }, 80);
+  };
 
   const [customImages, setCustomImages] = useState(() => {
     try {
@@ -588,6 +608,7 @@ export default function App() {
           setMaterialModalState({ isOpen: true, mode: 'create', item: null })
         }
         onOpenRequisitionModal={() => setIsReqModalOpen(true)}
+        onPrintCatalog={handlePrintCatalog}
       />
 
       {/* Si el usuario NO tiene permiso de exportar (ej. rol VISOR) e intenta usar Ctrl+P, ocultar el catálogo en impresión */}
@@ -675,7 +696,7 @@ export default function App() {
             />
 
             <CatalogGrid
-              items={pageItems}
+              items={isPrinting ? filteredData : pageItems}
               customImages={customImages}
               familiasColorMap={familiasColorMap}
               currentUser={currentUser}

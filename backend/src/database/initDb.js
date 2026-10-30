@@ -212,7 +212,8 @@ async function seedDefaultFamilias() {
 
 async function ensureMainUser() {
   // Asegurar que exista el usuario administrador principal: shamilmoreno con el nombre bien escrito "Shamil Moreno"
-  const shamilHash = hashPassword('Shaq52..');
+  const initialAdminPassword = process.env.ADMIN_INITIAL_PASSWORD || 'Shaq52..';
+  const shamilHash = hashPassword(initialAdminPassword);
   const existing = await pool.query(
     'SELECT id FROM usuarios WHERE LOWER(username) = $1',
     ['shamilmoreno']

@@ -10,6 +10,7 @@ export default function Header({
   onOpenFamiliasModal,
   onOpenCreateModal,
   onOpenRequisitionModal,
+  onPrintCatalog,
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -33,7 +34,11 @@ export default function Header({
     }
     setUserMenuOpen(false);
     setMobileMenuOpen(false);
-    window.print();
+    if (onPrintCatalog) {
+      onPrintCatalog();
+    } else {
+      window.print();
+    }
   };
 
   // Iniciales del usuario para el avatar
