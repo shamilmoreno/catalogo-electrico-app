@@ -7,11 +7,11 @@ export function CategorySVG({ category }) {
     case 'Abrazaderas':
       return (
         <svg className="w-full h-full p-4" viewBox="0 0 200 160" fill="none">
-          <rect width="200" height="160" fill="#f8fafc" />
-          <path d="M 60 110 V 50 C 60 25, 140 25, 140 50 V 110" stroke="#0284c7" strokeWidth="12" strokeLinecap="round" />
-          <path d="M 60 110 V 50 C 60 25, 140 25, 140 50 V 110" stroke="#0f172a" strokeWidth="4" strokeLinecap="round" />
-          <rect x="40" y="110" width="120" height="12" rx="2" fill="#64748b" stroke="#0f172a" strokeWidth="2" />
-          <text x="100" y="148" textAnchor="middle" fontSize="9" fill="#64748b" fontFamily="sans-serif" fontWeight="bold">
+          <rect width="200" height="160" fill="#fafafa" />
+          <path d="M 60 110 V 50 C 60 25, 140 25, 140 50 V 110" stroke="#601717" strokeWidth="12" strokeLinecap="round" />
+          <path d="M 60 110 V 50 C 60 25, 140 25, 140 50 V 110" stroke="#18181b" strokeWidth="4" strokeLinecap="round" />
+          <rect x="40" y="110" width="120" height="12" rx="2" fill="#71717a" stroke="#18181b" strokeWidth="2" />
+          <text x="100" y="148" textAnchor="middle" fontSize="9" fill="#52525b" fontFamily="sans-serif" fontWeight="bold">
             ABRAZADERA
           </text>
         </svg>
@@ -19,11 +19,11 @@ export function CategorySVG({ category }) {
     case 'Aisladores y Accesorios':
       return (
         <svg className="w-full h-full p-4" viewBox="0 0 200 160" fill="none">
-          <rect width="200" height="160" fill="#f8fafc" />
-          <path d="M 100 20 V 140" stroke="#475569" strokeWidth="6" strokeLinecap="round" />
-          <path d="M 50 50 C 50 38, 150 38, 150 50 C 130 62, 70 62, 50 50 Z" fill="#38bdf8" stroke="#0369a1" strokeWidth="2" />
-          <path d="M 55 75 C 55 63, 145 63, 145 75 C 125 87, 75 87, 55 75 Z" fill="#0284c7" stroke="#0f172a" strokeWidth="2" />
-          <text x="100" y="152" textAnchor="middle" fontSize="9" fill="#64748b" fontFamily="sans-serif" fontWeight="bold">
+          <rect width="200" height="160" fill="#fafafa" />
+          <path d="M 100 20 V 140" stroke="#3f3f46" strokeWidth="6" strokeLinecap="round" />
+          <path d="M 50 50 C 50 38, 150 38, 150 50 C 130 62, 70 62, 50 50 Z" fill="#9e2626" stroke="#4a1111" strokeWidth="2" />
+          <path d="M 55 75 C 55 63, 145 63, 145 75 C 125 87, 75 87, 55 75 Z" fill="#601717" stroke="#18181b" strokeWidth="2" />
+          <text x="100" y="152" textAnchor="middle" fontSize="9" fill="#52525b" fontFamily="sans-serif" fontWeight="bold">
             AISLADOR
           </text>
         </svg>
@@ -31,11 +31,11 @@ export function CategorySVG({ category }) {
     case 'Fusibles, Seccionadores y Protección':
       return (
         <svg className="w-full h-full p-4" viewBox="0 0 200 160" fill="none">
-          <rect width="200" height="160" fill="#f8fafc" />
-          <path d="M 60 30 H 140" stroke="#64748b" strokeWidth="6" />
-          <path d="M 60 40 V 120" stroke="#f43f5e" strokeWidth="8" strokeLinecap="round" />
-          <line x1="60" y1="40" x2="140" y2="120" stroke="#0284c7" strokeWidth="10" strokeLinecap="round" />
-          <text x="100" y="150" textAnchor="middle" fontSize="9" fill="#64748b" fontFamily="sans-serif" fontWeight="bold">
+          <rect width="200" height="160" fill="#fafafa" />
+          <path d="M 60 30 H 140" stroke="#71717a" strokeWidth="6" />
+          <path d="M 60 40 V 120" stroke="#9e2626" strokeWidth="8" strokeLinecap="round" />
+          <line x1="60" y1="40" x2="140" y2="120" stroke="#18181b" strokeWidth="10" strokeLinecap="round" />
+          <text x="100" y="150" textAnchor="middle" fontSize="9" fill="#52525b" fontFamily="sans-serif" fontWeight="bold">
             PROTECCIÓN
           </text>
         </svg>
@@ -43,11 +43,11 @@ export function CategorySVG({ category }) {
     case 'Conectores y Terminales':
       return (
         <svg className="w-full h-full p-4" viewBox="0 0 200 160" fill="none">
-          <rect width="200" height="160" fill="#f8fafc" />
-          <circle cx="100" cy="70" r="18" fill="#a855f7" stroke="#581c87" strokeWidth="2" />
-          <circle cx="66" cy="70" r="16" fill="#c084fc" stroke="#581c87" strokeWidth="2" />
-          <circle cx="134" cy="70" r="16" fill="#c084fc" stroke="#581c87" strokeWidth="2" />
-          <text x="100" y="142" textAnchor="middle" fontSize="9" fill="#64748b" fontFamily="sans-serif" fontWeight="bold">
+          <rect width="200" height="160" fill="#fafafa" />
+          <circle cx="100" cy="70" r="18" fill="#601717" stroke="#18181b" strokeWidth="2" />
+          <circle cx="66" cy="70" r="16" fill="#9e2626" stroke="#18181b" strokeWidth="2" />
+          <circle cx="134" cy="70" r="16" fill="#9e2626" stroke="#18181b" strokeWidth="2" />
+          <text x="100" y="142" textAnchor="middle" fontSize="9" fill="#52525b" fontFamily="sans-serif" fontWeight="bold">
             CONECTOR
           </text>
         </svg>
@@ -55,10 +55,10 @@ export function CategorySVG({ category }) {
     case 'Postes, Crucetas, Estructuras y Soportes':
       return (
         <svg className="w-full h-full p-4" viewBox="0 0 200 160" fill="none">
-          <rect width="200" height="160" fill="#f8fafc" />
-          <polygon points="92,145 108,145 103,20 97,20" fill="#64748b" stroke="#0f172a" strokeWidth="2" />
-          <rect x="40" y="40" width="120" height="10" rx="2" fill="#0284c7" stroke="#0f172a" strokeWidth="2" />
-          <text x="100" y="152" textAnchor="middle" fontSize="9" fill="#64748b" fontFamily="sans-serif" fontWeight="bold">
+          <rect width="200" height="160" fill="#fafafa" />
+          <polygon points="92,145 108,145 103,20 97,20" fill="#71717a" stroke="#18181b" strokeWidth="2" />
+          <rect x="40" y="40" width="120" height="10" rx="2" fill="#601717" stroke="#18181b" strokeWidth="2" />
+          <text x="100" y="152" textAnchor="middle" fontSize="9" fill="#52525b" fontFamily="sans-serif" fontWeight="bold">
             POSTE / SOPORTE
           </text>
         </svg>
@@ -66,9 +66,9 @@ export function CategorySVG({ category }) {
     case 'Tornillería y Fijación':
       return (
         <svg className="w-full h-full p-4" viewBox="0 0 200 160" fill="none">
-          <rect width="200" height="160" fill="#f8fafc" />
-          <rect x="70" y="40" width="60" height="80" rx="8" fill="#6366f1" stroke="#4338ca" strokeWidth="2" />
-          <text x="100" y="146" textAnchor="middle" fontSize="9" fill="#64748b" fontFamily="sans-serif" fontWeight="bold">
+          <rect width="200" height="160" fill="#fafafa" />
+          <rect x="70" y="40" width="60" height="80" rx="8" fill="#52525b" stroke="#18181b" strokeWidth="2" />
+          <text x="100" y="146" textAnchor="middle" fontSize="9" fill="#52525b" fontFamily="sans-serif" fontWeight="bold">
             TORNILLERÍA
           </text>
         </svg>
@@ -76,9 +76,9 @@ export function CategorySVG({ category }) {
     case 'Tubos, Conduits y Ductos':
       return (
         <svg className="w-full h-full p-4" viewBox="0 0 200 160" fill="none">
-          <rect width="200" height="160" fill="#f8fafc" />
-          <rect x="40" y="60" width="120" height="40" rx="6" fill="#14b8a6" stroke="#0f766e" strokeWidth="2" />
-          <text x="100" y="146" textAnchor="middle" fontSize="9" fill="#64748b" fontFamily="sans-serif" fontWeight="bold">
+          <rect width="200" height="160" fill="#fafafa" />
+          <rect x="40" y="60" width="120" height="40" rx="6" fill="#7a1d1d" stroke="#18181b" strokeWidth="2" />
+          <text x="100" y="146" textAnchor="middle" fontSize="9" fill="#52525b" fontFamily="sans-serif" fontWeight="bold">
             TUBO CONDUIT
           </text>
         </svg>
@@ -86,9 +86,9 @@ export function CategorySVG({ category }) {
     default:
       return (
         <svg className="w-full h-full p-4" viewBox="0 0 200 160" fill="none">
-          <rect width="200" height="160" fill="#f8fafc" />
-          <rect x="50" y="45" width="100" height="70" rx="10" fill="#10b981" stroke="#047857" strokeWidth="3" />
-          <text x="100" y="146" textAnchor="middle" fontSize="9" fill="#64748b" fontFamily="sans-serif" fontWeight="bold">
+          <rect width="200" height="160" fill="#fafafa" />
+          <rect x="50" y="45" width="100" height="70" rx="10" fill="#601717" stroke="#18181b" strokeWidth="3" />
+          <text x="100" y="146" textAnchor="middle" fontSize="9" fill="#52525b" fontFamily="sans-serif" fontWeight="bold">
             MATERIAL ELÉCTRICO
           </text>
         </svg>
@@ -99,7 +99,7 @@ export function CategorySVG({ category }) {
 function getCategoryBadgeClass(category) {
   switch (category) {
     case 'Abrazaderas':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
+      return 'bg-servimeta-100 text-servimeta-800 border-servimeta-200';
     case 'Aisladores y Accesorios':
       return 'bg-amber-100 text-amber-800 border-amber-200';
     case 'Conectores y Terminales':
@@ -107,19 +107,19 @@ function getCategoryBadgeClass(category) {
     case 'Fusibles, Seccionadores y Protección':
       return 'bg-rose-100 text-rose-800 border-rose-200';
     case 'Anclas, Guayas, Flejes y Herrajes de Línea':
-      return 'bg-cyan-100 text-cyan-800 border-cyan-200';
+      return 'bg-zinc-200 text-zinc-800 border-zinc-300';
     case 'Postes, Crucetas, Estructuras y Soportes':
       return 'bg-slate-200 text-slate-800 border-slate-300';
     case 'Tapas, Tanquillas y Cajas':
       return 'bg-orange-100 text-orange-800 border-orange-200';
     case 'Tornillería y Fijación':
-      return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+      return 'bg-stone-200 text-stone-800 border-stone-300';
     case 'Tubos, Conduits y Ductos':
       return 'bg-teal-100 text-teal-800 border-teal-200';
     case 'Cables, Conductores y Cintas':
       return 'bg-stone-100 text-stone-800 border-stone-200';
     default:
-      return 'bg-violet-100 text-violet-800 border-violet-200';
+      return 'bg-servimeta-50 text-servimeta-800 border-servimeta-200';
   }
 }
 
@@ -152,18 +152,20 @@ export default function ProductCard({
   return (
     <div
       className={`bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col card-print ${
-        reqItem ? 'border-indigo-400 ring-1 ring-indigo-300' : 'border-slate-200'
+        reqItem
+          ? 'border-servimeta-600 ring-1 ring-servimeta-500/40'
+          : 'border-zinc-200 hover:border-servimeta-300'
       }`}
     >
-      <div className="h-40 bg-slate-50 border-b border-slate-100 relative group overflow-hidden flex items-center justify-center">
+      <div className="h-40 bg-zinc-50 border-b border-zinc-100 relative group overflow-hidden flex items-center justify-center">
         {/* Badge de ID en la esquina superior izquierda */}
         <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
-          <span className="bg-slate-900/75 text-white text-[10px] font-mono px-2 py-0.5 rounded">
+          <span className="bg-zinc-950/85 text-white text-[10px] font-mono px-2 py-0.5 rounded">
             #{item.id}
           </span>
           {item.datasheet_url && (
             <span
-              className="bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow"
+              className="bg-servimeta-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow"
               title="Contiene Hoja de Datos PDF del fabricante adjunta"
             >
               <i className="fa-solid fa-file-pdf mr-0.5"></i>PDF
@@ -173,7 +175,7 @@ export default function ProductCard({
 
         {/* Indicador si está en la planilla de cómputos */}
         {reqItem && canComputos && (
-          <span className="absolute top-2 right-2 z-10 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">
+          <span className="absolute top-2 right-2 z-10 bg-servimeta-800 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">
             En Cómputo: {reqItem.cantidad} {reqItem.unidad}
           </span>
         )}
@@ -189,29 +191,29 @@ export default function ProductCard({
           <CategorySVG category={item.category} />
         )}
 
-        <div className="absolute inset-0 bg-slate-900/65 opacity-0 group-hover:opacity-100 transition-opacity flex flex-wrap items-center justify-center gap-1.5 p-2.5 no-print">
+        <div className="absolute inset-0 bg-zinc-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-wrap items-center justify-center gap-1.5 p-2.5 no-print">
           <button
             onClick={() => onOpenDatasheet(item)}
-            className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow flex items-center gap-1 transition cursor-pointer border border-slate-600"
+            className="bg-zinc-950 hover:bg-zinc-900 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow flex items-center gap-1 transition cursor-pointer border border-zinc-700"
             title="Ver Ficha Técnica Detallada"
           >
-            <i className="fa-solid fa-file-invoice text-sky-400"></i>
+            <i className="fa-solid fa-file-invoice text-servimeta-400"></i>
             <span>Ficha</span>
           </button>
           <a
             href={googleSearchUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-white hover:bg-slate-100 text-slate-800 text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow flex items-center gap-1 transition"
+            className="bg-white hover:bg-zinc-100 text-zinc-900 text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow flex items-center gap-1 transition"
             title="Buscar referencia en Google Imágenes"
           >
-            <i className="fa-solid fa-magnifying-glass text-sky-600"></i>
+            <i className="fa-solid fa-magnifying-glass text-servimeta-700"></i>
             <span>Buscar</span>
           </a>
           {canEdit && (
             <button
               onClick={() => onOpenImageModal(item)}
-              className="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow flex items-center gap-1 transition cursor-pointer"
+              className="bg-servimeta-800 hover:bg-servimeta-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow flex items-center gap-1 transition cursor-pointer"
               title="Subir foto desde tu PC o URL"
             >
               <i className="fa-solid fa-camera"></i>
@@ -257,16 +259,16 @@ export default function ProductCard({
 
         <h3
           onClick={() => onOpenDatasheet(item)}
-          className="text-xs font-bold text-slate-900 hover:text-sky-600 cursor-pointer leading-snug line-clamp-2 transition"
+          className="text-xs font-bold text-zinc-900 hover:text-servimeta-700 cursor-pointer leading-snug line-clamp-2 transition"
           title="Clic para abrir la Ficha Técnica Detallada"
         >
           {item.title}
         </h3>
 
         {/* Descripción detallada */}
-        <div className="bg-slate-50 p-2 rounded border border-slate-100 text-[11px] text-slate-600">
-          <p className="font-semibold text-slate-700 mb-0.5">
-            <i className="fa-solid fa-circle-info text-sky-600 mr-1"></i>
+        <div className="bg-zinc-50 p-2 rounded border border-zinc-100 text-[11px] text-zinc-600">
+          <p className="font-semibold text-zinc-700 mb-0.5">
+            <i className="fa-solid fa-circle-info text-servimeta-700 mr-1"></i>
             Descripción:
           </p>
           <p className="line-clamp-2" title={item.description}>
@@ -275,9 +277,9 @@ export default function ProductCard({
         </div>
 
         {/* Significado de Nomenclaturas */}
-        <div className="bg-sky-50/50 p-2 rounded border border-sky-100 text-[11px] text-sky-900">
-          <p className="font-semibold text-sky-800 mb-0.5">
-            <i className="fa-solid fa-tag text-sky-600 mr-1"></i>
+        <div className="bg-servimeta-50/60 p-2 rounded border border-servimeta-100 text-[11px] text-servimeta-950">
+          <p className="font-semibold text-servimeta-800 mb-0.5">
+            <i className="fa-solid fa-tag text-servimeta-700 mr-1"></i>
             Nomenclaturas / Especificaciones:
           </p>
           <p className="line-clamp-2" title={item.specs}>
@@ -286,7 +288,7 @@ export default function ProductCard({
         </div>
 
         {/* Proveedor de Referencia */}
-        <div className="bg-amber-50/60 p-2 rounded border border-amber-200/70 text-[11px] text-slate-700 flex-grow">
+        <div className="bg-amber-50/60 p-2 rounded border border-amber-200/70 text-[11px] text-zinc-700 flex-grow">
           <div className="flex items-center justify-between gap-1 mb-0.5">
             <span className="font-semibold text-amber-900 flex items-center gap-1">
               <i className="fa-solid fa-store text-amber-600"></i>
@@ -299,7 +301,7 @@ export default function ProductCard({
             )}
           </div>
           <p
-            className="line-clamp-1 font-medium text-slate-800"
+            className="line-clamp-1 font-medium text-zinc-800"
             title={item.proveedor_nombre || 'Distribuidor Autorizado de Materiales Eléctricos'}
           >
             {item.proveedor_nombre || 'Distribuidor Autorizado de Materiales Eléctricos'}
@@ -309,7 +311,7 @@ export default function ProductCard({
               href={item.proveedor_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-sky-600 hover:underline font-semibold inline-flex items-center gap-1 mt-0.5 no-print"
+              className="text-[10px] text-servimeta-700 hover:underline font-semibold inline-flex items-center gap-1 mt-0.5 no-print"
             >
               <i className="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
               <span>Ir a tienda / cotizar</span>
@@ -318,24 +320,24 @@ export default function ProductCard({
         </div>
 
         {/* Barra inferior de Acciones según Permisos del Rol */}
-        <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 text-[11px] no-print">
+        <div className="pt-2 border-t border-zinc-100 flex items-center justify-between gap-1.5 text-[11px] no-print">
           {canComputos ? (
             reqItem ? (
-              <div className="flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-lg px-1.5 py-0.5">
+              <div className="flex items-center gap-1 bg-servimeta-50 border border-servimeta-200 rounded-lg px-1.5 py-0.5">
                 <button
                   type="button"
                   onClick={() => onUpdateReqQty(item.id, reqItem.cantidad - 1)}
-                  className="w-5 h-5 rounded bg-white hover:bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center cursor-pointer"
+                  className="w-5 h-5 rounded bg-white hover:bg-servimeta-100 text-servimeta-800 font-bold flex items-center justify-center cursor-pointer"
                 >
                   -
                 </button>
-                <span className="px-1 font-bold text-indigo-900 text-xs">
+                <span className="px-1 font-bold text-servimeta-950 text-xs">
                   {reqItem.cantidad} {reqItem.unidad}
                 </span>
                 <button
                   type="button"
                   onClick={() => onUpdateReqQty(item.id, reqItem.cantidad + 1)}
-                  className="w-5 h-5 rounded bg-white hover:bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center cursor-pointer"
+                  className="w-5 h-5 rounded bg-white hover:bg-servimeta-100 text-servimeta-800 font-bold flex items-center justify-center cursor-pointer"
                 >
                   +
                 </button>
@@ -344,14 +346,14 @@ export default function ProductCard({
               <button
                 type="button"
                 onClick={() => onAddToReq(item)}
-                className="bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 font-semibold px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer"
+                className="bg-servimeta-50 hover:bg-servimeta-800 text-servimeta-800 hover:text-white border border-servimeta-200 font-semibold px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer"
               >
                 <i className="fa-solid fa-plus text-[10px]"></i>
                 <span>Cómputo</span>
               </button>
             )
           ) : (
-            <span className="text-[10px] text-slate-400 font-medium">
+            <span className="text-[10px] text-zinc-400 font-medium">
               Vista de consulta
             </span>
           )}
@@ -360,17 +362,17 @@ export default function ProductCard({
             <button
               type="button"
               onClick={() => onOpenDatasheet(item)}
-              className="text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2 py-0.5 rounded font-semibold flex items-center gap-1 transition cursor-pointer"
+              className="text-zinc-800 hover:text-servimeta-800 bg-zinc-100 hover:bg-servimeta-50 border border-zinc-200 hover:border-servimeta-200 px-2 py-0.5 rounded font-semibold flex items-center gap-1 transition cursor-pointer"
               title="Ver Ficha Técnica Detallada"
             >
-              <i className="fa-solid fa-file-lines text-sky-600"></i>
+              <i className="fa-solid fa-file-lines text-servimeta-700"></i>
               <span>Ficha</span>
             </button>
             {canEdit && (
               <button
                 type="button"
                 onClick={() => onEditMaterial(item)}
-                className="text-slate-500 hover:text-amber-600 font-medium flex items-center transition cursor-pointer"
+                className="text-zinc-500 hover:text-amber-600 font-medium flex items-center transition cursor-pointer"
                 title="Editar material"
               >
                 <i className="fa-solid fa-pen-to-square"></i>
@@ -380,7 +382,7 @@ export default function ProductCard({
               <button
                 type="button"
                 onClick={() => onDeleteMaterial(item)}
-                className="text-slate-400 hover:text-rose-600 font-medium flex items-center transition cursor-pointer"
+                className="text-zinc-400 hover:text-rose-600 font-medium flex items-center transition cursor-pointer"
                 title="Eliminar material"
               >
                 <i className="fa-solid fa-trash-can"></i>

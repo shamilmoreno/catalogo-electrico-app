@@ -4,7 +4,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #f8fafc;
+  background-color: #f4f4f5;
 }
 
 @media print {
@@ -29,14 +29,14 @@ body {
   }
   .card-print {
     break-inside: avoid;
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid #d4d4d8 !important;
     box-shadow: none !important;
     page-break-inside: avoid;
   }
   .header-print {
     margin-bottom: 20px !important;
-    border-bottom: 2px solid #0f172a !important;
-    padding-bottom: 10px !important;
+    border-bottom: 3px solid #601717 !important;
+    padding-bottom: 12px !important;
     display: block !important;
   }
 }

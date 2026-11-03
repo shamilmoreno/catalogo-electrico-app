@@ -258,25 +258,25 @@ export default function MaterialModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print overflow-y-auto">
-      <div className="bg-white rounded-xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 my-8 max-h-[92vh] overflow-y-auto">
-        <div className="flex justify-between items-center pb-3 mb-4 border-b border-slate-200">
-          <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+    <div className="fixed inset-0 bg-zinc-950/65 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print overflow-y-auto">
+      <div className="bg-white rounded-xl max-w-2xl w-full p-6 shadow-2xl border border-zinc-200 border-t-4 border-t-servimeta-800 my-8 max-h-[92vh] overflow-y-auto">
+        <div className="flex justify-between items-center pb-3 mb-4 border-b border-zinc-200">
+          <h3 className="text-base sm:text-lg font-bold text-zinc-900 flex items-center gap-2">
             <i
               className={`fa-solid ${
-                mode === 'edit' ? 'fa-pen-to-square text-amber-500' : 'fa-plus-circle text-emerald-600'
+                mode === 'edit' ? 'fa-pen-to-square text-servimeta-700' : 'fa-plus-circle text-emerald-600'
               }`}
             ></i>
             <span>
               {mode === 'edit'
                 ? `Editar Material Eléctrico (ID #${item?.id})`
-                : 'Registrar Nuevo Material en PostgreSQL'}
+                : 'Registrar Nuevo Material • Servimeta C.A.'}
             </span>
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+            className="text-zinc-400 hover:text-zinc-600 p-1 cursor-pointer"
           >
             <i className="fa-solid fa-xmark text-lg"></i>
           </button>
@@ -293,7 +293,7 @@ export default function MaterialModal({
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
             {/* Título / Nomenclatura */}
             <div className="sm:col-span-8">
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Título / Nomenclatura Técnica <span className="text-rose-500">*</span>
               </label>
               <input
@@ -302,13 +302,13 @@ export default function MaterialModal({
                 value={titulo}
                 onChange={(e) => setTitulo(e.target.value)}
                 placeholder='Ej. ABRAZADERA UNIVERSAL AG 4" A 5" 4T'
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs uppercase focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-xs uppercase focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
               />
             </div>
 
             {/* Estado en Stock */}
             <div className="sm:col-span-4 flex flex-col justify-end">
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Disponibilidad en Almacén
               </label>
               <button
@@ -330,14 +330,14 @@ export default function MaterialModal({
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
             <div className="sm:col-span-7">
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-slate-700">
+                <label className="block text-xs font-semibold text-zinc-700">
                   Familia del Material <span className="text-rose-500">*</span>
                 </label>
                 {onOpenFamiliasModal && (
                   <button
                     type="button"
                     onClick={onOpenFamiliasModal}
-                    className="text-[11px] font-semibold text-sky-600 hover:text-sky-800 hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] font-semibold text-servimeta-700 hover:text-servimeta-900 hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <i className="fa-solid fa-layer-group text-[10px]"></i>
                     <span>+ Gestionar Familias</span>
@@ -354,7 +354,7 @@ export default function MaterialModal({
                     setProveedorNombre(getFamilyDefaultSupplier(newCat));
                   }
                 }}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-sky-500 focus:outline-none cursor-pointer"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-servimeta-700 focus:outline-none cursor-pointer"
               >
                 {familyList.map((fam) => (
                   <option key={fam.nombre} value={fam.nombre}>
@@ -369,7 +369,7 @@ export default function MaterialModal({
               <button
                 type="button"
                 onClick={handleAutoFill}
-                className="w-full py-2 px-3 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-2 px-3 bg-servimeta-50 hover:bg-servimeta-100 text-servimeta-800 border border-servimeta-200 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer"
                 title="Genera automáticamente la descripción y analiza siglas como AG, AL, CU, ACSR, 3T, 4T"
               >
                 <i className="fa-solid fa-wand-magic-sparkles"></i>
@@ -380,7 +380,7 @@ export default function MaterialModal({
 
           {/* Descripción */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label className="block text-xs font-semibold text-zinc-700 mb-1">
               Descripción Funcional
             </label>
             <textarea
@@ -388,13 +388,13 @@ export default function MaterialModal({
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
               placeholder="Descripción técnica de la función del material..."
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
             />
           </div>
 
           {/* Especificaciones / Nomenclaturas */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label className="block text-xs font-semibold text-zinc-700 mb-1">
               Significado de Nomenclaturas / Especificaciones Técnicas
             </label>
             <textarea
@@ -402,14 +402,14 @@ export default function MaterialModal({
               value={especificaciones}
               onChange={(e) => setEspecificaciones(e.target.value)}
               placeholder="Ej. AG: Acero Galvanizado | 3T: 3 Tornillos..."
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
             />
           </div>
 
           {/* Parámetros de Ingeniería Opcionales (Material Base, Tensión, Norma) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-zinc-50 p-3 rounded-xl border border-zinc-200">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
                 Material Constructivo
               </label>
               <input
@@ -417,11 +417,11 @@ export default function MaterialModal({
                 value={materialBase}
                 onChange={(e) => setMaterialBase(e.target.value)}
                 placeholder="Ej. Acero Galvanizado ASTM A153"
-                className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
                 Nivel de Tensión Nominal
               </label>
               <input
@@ -429,11 +429,11 @@ export default function MaterialModal({
                 value={nivelTension}
                 onChange={(e) => setNivelTension(e.target.value)}
                 placeholder="Ej. Media Tensión 13.8 kV / 24 kV"
-                className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
                 Normas Técnicas de Referencia
               </label>
               <input
@@ -441,7 +441,7 @@ export default function MaterialModal({
                 value={normaTecnica}
                 onChange={(e) => setNormaTecnica(e.target.value)}
                 placeholder="Ej. CORPOELEC / ANSI C135.1"
-                className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
               />
             </div>
           </div>
@@ -455,7 +455,7 @@ export default function MaterialModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
               <div className="sm:col-span-8">
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
                   Nombre del Proveedor / Fabricante / Tienda
                 </label>
                 <input
@@ -463,12 +463,12 @@ export default function MaterialModal({
                   value={proveedorNombre}
                   onChange={(e) => setProveedorNombre(e.target.value)}
                   placeholder="Ej. Suministros Eléctricos C.A. / Hubbell / 3M / Elecon"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
 
               <div className="sm:col-span-4">
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
                   Precio Ref. Unitario (USD $)
                 </label>
                 <input
@@ -478,12 +478,12 @@ export default function MaterialModal({
                   value={precioReferencia}
                   onChange={(e) => setPrecioReferencia(e.target.value)}
                   placeholder="Ej. 14.50"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
 
               <div className="sm:col-span-6">
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
                   Teléfono / WhatsApp / Correo / Ubicación
                 </label>
                 <input
@@ -491,12 +491,12 @@ export default function MaterialModal({
                   value={proveedorContacto}
                   onChange={(e) => setProveedorContacto(e.target.value)}
                   placeholder="Ej. +58 414-0000000 / ventas@proveedor.com"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
 
               <div className="sm:col-span-6">
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
                   Enlace Web de Compra / Catálogo del Proveedor
                 </label>
                 <input
@@ -504,7 +504,7 @@ export default function MaterialModal({
                   value={proveedorUrl}
                   onChange={(e) => setProveedorUrl(e.target.value)}
                   placeholder="https://tienda-electrica.com/producto"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -512,8 +512,8 @@ export default function MaterialModal({
 
           {/* Subir Imagen desde PC o URL */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Imagen del Material (Subir desde tu PC o pegar URL — se guarda en <code className="text-sky-700">imagen_url</code>)
+            <label className="block text-xs font-semibold text-zinc-700 mb-1">
+              Imagen del Material (Subir desde tu PC o pegar URL — se guarda en <code className="text-servimeta-800">imagen_url</code>)
             </label>
             <div className="flex flex-wrap sm:flex-nowrap gap-2">
               <input
@@ -527,7 +527,7 @@ export default function MaterialModal({
                 type="button"
                 disabled={uploading}
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+                className="px-3.5 py-2 bg-servimeta-800 hover:bg-servimeta-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
               >
                 <i className={`fa-solid ${uploading ? 'fa-circle-notch fa-spin' : 'fa-upload'}`}></i>
                 <span>{uploading ? 'Subiendo...' : 'Subir desde mi PC'}</span>
@@ -538,7 +538,7 @@ export default function MaterialModal({
                 value={imagenUrl}
                 onChange={(e) => setImagenUrl(e.target.value)}
                 placeholder="O pega un enlace https://ejemplo.com/foto.jpg"
-                className="flex-grow px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                className="flex-grow px-3 py-2 border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
               />
 
               {imagenUrl && (
@@ -553,11 +553,11 @@ export default function MaterialModal({
             </div>
 
             {imagenUrl.trim() && (
-              <div className="mt-2 border border-slate-200 rounded-lg p-2 bg-slate-50 text-center">
+              <div className="mt-2 border border-zinc-200 rounded-lg p-2 bg-zinc-50 text-center">
                 <img
                   src={resolveMediaUrl(imagenUrl)}
                   alt="Vista previa"
-                  className="h-24 object-contain mx-auto rounded bg-white p-1 border border-slate-100"
+                  className="h-24 object-contain mx-auto rounded bg-white p-1 border border-zinc-100"
                   onError={(e) => {
                     e.target.style.display = 'none';
                   }}
@@ -570,12 +570,12 @@ export default function MaterialModal({
           </div>
 
           {/* Botones de acción */}
-          <div className="flex justify-end items-center gap-2 pt-3 border-t border-slate-200">
+          <div className="flex justify-end items-center gap-2 pt-3 border-t border-zinc-200">
             <button
               type="button"
               disabled={saving || uploading}
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg cursor-pointer"
+              className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold rounded-lg cursor-pointer"
             >
               Cancelar
             </button>
@@ -584,7 +584,7 @@ export default function MaterialModal({
               disabled={saving || uploading}
               className={`px-5 py-2 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50 ${
                 mode === 'edit'
-                  ? 'bg-amber-600 hover:bg-amber-500'
+                  ? 'bg-servimeta-800 hover:bg-servimeta-700'
                   : 'bg-emerald-600 hover:bg-emerald-500'
               }`}
             >

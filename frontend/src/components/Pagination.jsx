@@ -37,8 +37,8 @@ export default function Pagination({
           onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
           className={`px-2.5 py-1 rounded border text-xs font-medium ${
             currentPage === 1
-              ? 'bg-slate-50 text-slate-300 cursor-not-allowed'
-              : 'bg-white hover:bg-slate-100 text-slate-700 cursor-pointer'
+              ? 'bg-zinc-50 text-zinc-300 border-zinc-200 cursor-not-allowed'
+              : 'bg-white hover:bg-zinc-100 text-zinc-700 border-zinc-300 cursor-pointer'
           }`}
         >
           <i className="fa-solid fa-chevron-left"></i>
@@ -48,7 +48,7 @@ export default function Pagination({
           typeof entry === 'string' ? (
             <span
               key={entry}
-              className="px-1.5 py-1 text-xs text-slate-400 select-none"
+              className="px-1.5 py-1 text-xs text-zinc-400 select-none"
             >
               ...
             </span>
@@ -56,10 +56,10 @@ export default function Pagination({
             <button
               key={entry}
               onClick={() => onPageChange(entry)}
-              className={`px-3 py-1 rounded border text-xs font-semibold cursor-pointer ${
+              className={`px-3 py-1 rounded border text-xs font-semibold cursor-pointer transition ${
                 entry === currentPage
-                  ? 'bg-sky-600 text-white border-sky-600'
-                  : 'bg-white hover:bg-slate-100 text-slate-700'
+                  ? 'bg-servimeta-800 text-white border-servimeta-800 shadow-sm'
+                  : 'bg-white hover:bg-servimeta-50 hover:text-servimeta-800 hover:border-servimeta-200 text-zinc-700 border-zinc-300'
               }`}
             >
               {entry}
@@ -74,8 +74,8 @@ export default function Pagination({
           }
           className={`px-2.5 py-1 rounded border text-xs font-medium ${
             currentPage === totalPages
-              ? 'bg-slate-50 text-slate-300 cursor-not-allowed'
-              : 'bg-white hover:bg-slate-100 text-slate-700 cursor-pointer'
+              ? 'bg-zinc-50 text-zinc-300 border-zinc-200 cursor-not-allowed'
+              : 'bg-white hover:bg-zinc-100 text-zinc-700 border-zinc-300 cursor-pointer'
           }`}
         >
           <i className="fa-solid fa-chevron-right"></i>
@@ -86,16 +86,16 @@ export default function Pagination({
 
   if (position === 'bottom') {
     return (
-      <div className="flex justify-center items-center mt-8 text-xs text-slate-600 no-print">
+      <div className="flex justify-center items-center mt-8 text-xs text-zinc-600 no-print">
         {renderButtons()}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center mb-4 text-xs text-slate-600 gap-2 no-print">
-      <div>
-        Mostrando {startIndex + 1} - {endIndex} de {totalItems} productos
+    <div className="flex flex-col sm:flex-row justify-between items-center mb-4 text-xs text-zinc-600 gap-2 no-print">
+      <div className="font-medium">
+        Mostrando <strong className="text-zinc-900">{startIndex + 1} - {endIndex}</strong> de <strong className="text-servimeta-800">{totalItems}</strong> productos
       </div>
       {renderButtons()}
     </div>

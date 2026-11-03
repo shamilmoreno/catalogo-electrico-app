@@ -17,14 +17,14 @@ export default function CatalogGrid({
 }) {
   if (!items || items.length === 0) {
     return (
-      <div className="text-center py-16 bg-white rounded-xl border border-slate-200 mt-4 no-print">
-        <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="text-center py-16 bg-white rounded-xl border border-zinc-200 mt-4 no-print">
+        <div className="w-16 h-16 bg-servimeta-50 text-servimeta-700 rounded-full flex items-center justify-center mx-auto mb-4">
           <i className="fa-solid fa-box-open text-2xl"></i>
         </div>
-        <h3 className="text-lg font-semibold text-slate-800">
+        <h3 className="text-lg font-semibold text-zinc-800">
           No se encontraron productos
         </h3>
-        <p className="text-sm text-slate-500 max-w-md mx-auto mt-1">
+        <p className="text-sm text-zinc-500 max-w-md mx-auto mt-1">
           Verifica las palabras clave introducidas o selecciona otra familia.
         </p>
       </div>

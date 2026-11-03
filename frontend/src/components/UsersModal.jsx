@@ -4,7 +4,7 @@ import { apiFetch } from '../utils/api';
 export const ROLE_PRESETS = {
   ADMIN: {
     label: 'Administrador General',
-    badge: 'bg-rose-100 text-rose-800 border-rose-200',
+    badge: 'bg-servimeta-100 text-servimeta-800 border-servimeta-200',
     perms: {
       puede_crear: true,
       puede_editar: true,
@@ -16,7 +16,7 @@ export const ROLE_PRESETS = {
   },
   INGENIERO: {
     label: 'Ingeniero / Editor Técnico',
-    badge: 'bg-sky-100 text-sky-800 border-sky-200',
+    badge: 'bg-zinc-200 text-zinc-900 border-zinc-300',
     perms: {
       puede_crear: true,
       puede_editar: true,
@@ -40,7 +40,7 @@ export const ROLE_PRESETS = {
   },
   VISOR: {
     label: 'Consulta / Solo Lectura (Sin Descarga)',
-    badge: 'bg-slate-200 text-slate-800 border-slate-300',
+    badge: 'bg-zinc-100 text-zinc-700 border-zinc-300',
     perms: {
       puede_crear: false,
       puede_editar: false,
@@ -218,26 +218,26 @@ export default function UsersModal({
     { key: 'puede_crear', label: 'Crear Materiales', icon: 'fa-plus-circle text-emerald-600' },
     { key: 'puede_editar', label: 'Editar / Subir Fotos y PDFs', icon: 'fa-pen-to-square text-amber-600' },
     { key: 'puede_eliminar', label: 'Eliminar Materiales', icon: 'fa-trash-can text-rose-600' },
-    { key: 'puede_computos', label: 'Armar Cómputos / Requisición', icon: 'fa-clipboard-list text-indigo-600' },
-    { key: 'puede_exportar', label: 'Descargar / Imprimir PDF y Excel', icon: 'fa-file-arrow-down text-sky-600' },
-    { key: 'puede_usuarios', label: 'Administrar Usuarios y Roles', icon: 'fa-user-shield text-purple-600' },
+    { key: 'puede_computos', label: 'Armar Cómputos / Requisición', icon: 'fa-clipboard-list text-servimeta-700' },
+    { key: 'puede_exportar', label: 'Descargar / Imprimir PDF y Excel', icon: 'fa-file-arrow-down text-zinc-700' },
+    { key: 'puede_usuarios', label: 'Administrar Usuarios y Roles', icon: 'fa-user-shield text-servimeta-800' },
   ];
 
   return (
-    <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 no-print overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-6xl w-full shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden">
+    <div className="fixed inset-0 bg-zinc-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 no-print overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-6xl w-full shadow-2xl border border-zinc-200 flex flex-col max-h-[92vh] overflow-hidden">
         {/* Cabecera */}
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-zinc-950 text-white px-6 py-4 flex items-center justify-between border-b-2 border-servimeta-800">
           <div className="flex items-center gap-3">
-            <div className="bg-rose-600 p-2.5 rounded-lg text-white shadow">
+            <div className="bg-servimeta-800 p-2.5 rounded-lg text-white shadow border border-servimeta-600/40">
               <i className="fa-solid fa-users-gear text-xl"></i>
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold">
                 Gestión de Usuarios, Roles y Permisos Granulares (RBAC)
               </h2>
-              <p className="text-xs text-slate-400">
-                Delimita quién puede crear, modificar, armar cómputos o descargar el catálogo (Tabla PostgreSQL: <code className="text-rose-300">usuarios</code>)
+              <p className="text-xs text-zinc-400">
+                <strong className="text-servimeta-300">Servimeta C.A.</strong> • Delimita quién puede crear, modificar, armar cómputos o descargar el catálogo
               </p>
             </div>
           </div>
@@ -245,7 +245,7 @@ export default function UsersModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1.5 cursor-pointer"
+            className="text-zinc-400 hover:text-white p-1.5 cursor-pointer"
           >
             <i className="fa-solid fa-xmark text-xl"></i>
           </button>
@@ -271,13 +271,13 @@ export default function UsersModal({
           {/* Columna Izquierda (5 cols): Crear / Editar Usuario y Matriz de Permisos */}
           <form
             onSubmit={handleSubmit}
-            className="lg:col-span-5 bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4 h-fit"
+            className="lg:col-span-5 bg-zinc-50 p-5 rounded-xl border border-zinc-200 space-y-4 h-fit"
           >
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <div className="flex items-center justify-between border-b border-zinc-200 pb-2.5">
+              <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
                 <i
                   className={`fa-solid ${
-                    editingUser ? 'fa-user-pen text-amber-600' : 'fa-user-plus text-emerald-600'
+                    editingUser ? 'fa-user-pen text-servimeta-700' : 'fa-user-plus text-emerald-600'
                   }`}
                 ></i>
                 <span>
@@ -290,7 +290,7 @@ export default function UsersModal({
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="text-xs text-sky-600 hover:underline font-semibold cursor-pointer"
+                  className="text-xs text-servimeta-700 hover:underline font-semibold cursor-pointer"
                 >
                   + Nuevo
                 </button>
@@ -299,7 +299,7 @@ export default function UsersModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-zinc-700 mb-1">
                   Usuario (Login) <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -308,12 +308,12 @@ export default function UsersModal({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="ej. jrodriguez"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-zinc-700 mb-1">
                   {editingUser ? 'Nueva Clave (Opcional)' : 'Contraseña *'}
                 </label>
                 <input
@@ -322,25 +322,25 @@ export default function UsersModal({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={editingUser ? 'Dejar vacío para mantener' : '••••••••'}
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-zinc-700 mb-1">
                   Correo Electrónico (Para recuperación de clave)
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ej. usuario@weworkintegrados.com"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  placeholder="ej. usuario@servimeta.com"
+                  className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-zinc-700 mb-1">
                   Nombre Completo <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -349,12 +349,12 @@ export default function UsersModal({
                   value={nombreCompleto}
                   onChange={(e) => setNombreCompleto(e.target.value)}
                   placeholder="Ej. Ing. Carlos Pérez"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-zinc-700 mb-1">
                   Cargo / Departamento
                 </label>
                 <input
@@ -362,18 +362,18 @@ export default function UsersModal({
                   value={cargo}
                   onChange={(e) => setCargo(e.target.value)}
                   placeholder="Ej. Mantenimiento de Redes"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  className="w-full px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                <label className="block text-[11px] font-bold text-zinc-700 mb-1">
                   Plantilla de Rol
                 </label>
                 <select
                   value={rol}
                   onChange={(e) => handleSelectRolePreset(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-sky-500 focus:outline-none cursor-pointer"
+                  className="w-full px-2.5 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-servimeta-700 focus:outline-none cursor-pointer"
                 >
                   {Object.entries(ROLE_PRESETS).map(([key, val]) => (
                     <option key={key} value={key}>
@@ -385,17 +385,17 @@ export default function UsersModal({
             </div>
 
             {/* Matriz de Permisos Granulares */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2">
-              <div className="text-[11px] font-bold text-slate-700 uppercase">
+            <div className="bg-white p-3.5 rounded-xl border border-zinc-200 space-y-2">
+              <div className="text-[11px] font-bold text-zinc-700 uppercase">
                 Permisos Específicos del Usuario:
               </div>
               <div className="grid grid-cols-1 gap-2">
                 {PERM_LABELS.map((p) => (
                   <label
                     key={p.key}
-                    className="flex items-center justify-between p-2 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer text-xs"
+                    className="flex items-center justify-between p-2 rounded-lg border border-zinc-100 hover:bg-zinc-50 cursor-pointer text-xs"
                   >
-                    <span className="flex items-center gap-2 font-medium text-slate-800">
+                    <span className="flex items-center gap-2 font-medium text-zinc-800">
                       <i className={`fa-solid ${p.icon} w-4 text-center`}></i>
                       <span>{p.label}</span>
                     </span>
@@ -403,7 +403,7 @@ export default function UsersModal({
                       type="checkbox"
                       checked={Boolean(perms[p.key])}
                       onChange={() => handleTogglePerm(p.key)}
-                      className="w-4 h-4 accent-sky-600 rounded cursor-pointer"
+                      className="w-4 h-4 accent-servimeta-800 rounded cursor-pointer"
                     />
                   </label>
                 ))}
@@ -411,7 +411,7 @@ export default function UsersModal({
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+              <label className="flex items-center gap-2 text-xs font-semibold text-zinc-700 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={activo}
@@ -424,7 +424,7 @@ export default function UsersModal({
               <button
                 type="submit"
                 disabled={saving}
-                className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 bg-servimeta-800 hover:bg-servimeta-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
               >
                 <i className="fa-solid fa-floppy-disk"></i>
                 <span>
@@ -440,12 +440,12 @@ export default function UsersModal({
 
           {/* Columna Derecha (7 cols): Lista de Usuarios Registrados */}
           <div className="lg:col-span-7 space-y-3">
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-sm font-bold text-zinc-900">
               Usuarios Registrados en PostgreSQL ({users.length})
             </h3>
 
             {loading ? (
-              <div className="text-center py-12 text-xs text-slate-500">
+              <div className="text-center py-12 text-xs text-zinc-500">
                 Cargando usuarios...
               </div>
             ) : (
@@ -456,15 +456,15 @@ export default function UsersModal({
                     <div
                       key={u.id}
                       className={`p-4 rounded-xl border transition bg-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
-                        !u.activo ? 'opacity-60 border-rose-200 bg-rose-50/20' : 'border-slate-200'
+                        !u.activo ? 'opacity-60 border-rose-200 bg-rose-50/20' : 'border-zinc-200'
                       }`}
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-mono font-bold text-xs bg-slate-900 text-white px-2 py-0.5 rounded">
+                          <span className="font-mono font-bold text-xs bg-zinc-900 text-white px-2 py-0.5 rounded">
                             @{u.username}
                           </span>
-                          <span className="text-sm font-bold text-slate-900">
+                          <span className="text-sm font-bold text-zinc-900">
                             {u.nombre_completo}
                           </span>
                           <span
@@ -479,7 +479,7 @@ export default function UsersModal({
                           )}
                         </div>
 
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-zinc-500">
                           {u.cargo || 'Sin cargo especificado'}
                           {u.email ? ` • ✉️ ${u.email}` : ''}
                         </p>
@@ -502,21 +502,21 @@ export default function UsersModal({
                             </span>
                           )}
                           {u.puede_computos && (
-                            <span className="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded font-semibold">
+                            <span className="text-[10px] bg-servimeta-50 text-servimeta-800 border border-servimeta-200 px-2 py-0.5 rounded font-semibold">
                               ✓ Cómputos
                             </span>
                           )}
                           {u.puede_exportar ? (
-                            <span className="text-[10px] bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded font-semibold">
+                            <span className="text-[10px] bg-zinc-100 text-zinc-800 border border-zinc-300 px-2 py-0.5 rounded font-semibold">
                               ✓ Descargar PDF/Excel
                             </span>
                           ) : (
-                            <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-300 px-2 py-0.5 rounded font-semibold">
+                            <span className="text-[10px] bg-zinc-100 text-zinc-600 border border-zinc-300 px-2 py-0.5 rounded font-semibold">
                               🔒 Sin Descarga de Catálogo
                             </span>
                           )}
                           {u.puede_usuarios && (
-                            <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded font-semibold">
+                            <span className="text-[10px] bg-servimeta-100 text-servimeta-900 border border-servimeta-300 px-2 py-0.5 rounded font-semibold">
                               ✓ Admin Usuarios
                             </span>
                           )}
@@ -527,7 +527,7 @@ export default function UsersModal({
                         <button
                           type="button"
                           onClick={() => handleEditClick(u)}
-                          className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
+                          className="px-3 py-1.5 bg-servimeta-50 hover:bg-servimeta-100 text-servimeta-800 border border-servimeta-200 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
                         >
                           <i className="fa-solid fa-pen"></i>
                           <span>Permisos</span>

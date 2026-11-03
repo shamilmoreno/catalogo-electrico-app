@@ -139,12 +139,13 @@ export default function RequisitionModal({
     }
   };
 
-  // Exportar a CSV compatible con Microsoft Excel (UTF-8 con BOM)
+  // Exportar a CSV compatible con Microsoft Excel (UTF-8 con BOM) con Identidad Servimeta C.A.
   const handleExportCSV = () => {
     if (reqItems.length === 0) return;
 
     const fecha = new Date().toLocaleDateString('es-ES');
     const headerLines = [
+      ['SERVIMETA C.A. - RIF: J-30786992-5'],
       ['PLANILLA DE CÓMPUTOS MÉTRICOS Y REQUISICIÓN DE MATERIALES ELÉCTRICOS'],
       ['Proyecto / Obra:', proyecto || 'Sin especificar', 'Fecha:', fecha],
       ['Solicitante / Ing.:', solicitante || 'Sin especificar', 'Nivel de Tensión:', nivelTension],
@@ -199,13 +200,13 @@ export default function RequisitionModal({
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '_');
     link.href = url;
-    link.setAttribute('download', `requisicion_${cleanName}.csv`);
+    link.setAttribute('download', `requisicion_servimeta_${cleanName}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // Imprimir Planilla Oficial de Requisición / Cómputos Métricos (PDF)
+  // Imprimir Planilla Oficial de Requisición / Cómputos Métricos (PDF) con Identidad Servimeta C.A.
   const handlePrintRequisition = () => {
     if (reqItems.length === 0) return;
     const fecha = new Date().toLocaleDateString('es-ES', {
@@ -213,6 +214,8 @@ export default function RequisitionModal({
       month: 'long',
       day: 'numeric',
     });
+
+    const logoAbsUrl = `${window.location.origin}/logo-servimeta.png`;
 
     const rowsHtml = reqItems
       .map((it, idx) => {
@@ -241,35 +244,40 @@ export default function RequisitionModal({
       <html lang="es">
       <head>
         <meta charset="UTF-8" />
-        <title>Requisición de Materiales - ${proyecto || 'Cómputos Métricos'}</title>
+        <title>Requisición de Materiales - ${proyecto || 'Cómputos Métricos'} | Servimeta C.A.</title>
         <style>
-          body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; margin: 28px; font-size: 12px; }
-          .header { border-bottom: 3px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; }
-          .title { font-size: 18px; font-weight: 800; text-transform: uppercase; margin: 0; }
-          .subtitle { font-size: 12px; color: #475569; margin: 3px 0 0 0; }
-          .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; margin-bottom: 16px; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; color: #18181b; margin: 28px; font-size: 12px; }
+          .header { border-bottom: 4px solid #601717; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+          .brand-wrap { display: flex; align-items: center; gap: 16px; }
+          .brand-logo { height: 50px; width: auto; object-fit: contain; }
+          .title { font-size: 17px; font-weight: 800; text-transform: uppercase; margin: 0; color: #09090b; }
+          .subtitle { font-size: 11.5px; color: #601717; font-weight: 700; margin: 3px 0 0 0; }
+          .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; background: #fafafa; border: 1px solid #d4d4d8; border-left: 4px solid #601717; border-radius: 6px; padding: 12px; margin-bottom: 16px; }
           .meta-item { font-size: 12px; }
-          .meta-label { font-weight: 700; color: #334155; }
+          .meta-label { font-weight: 700; color: #27272a; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
-          th { background: #0f172a; color: #ffffff; font-size: 10.5px; text-transform: uppercase; padding: 8px 6px; border: 1px solid #0f172a; }
-          td { padding: 7px 6px; border: 1px solid #cbd5e1; font-size: 11px; }
-          tr:nth-child(even) { background: #f8fafc; }
-          .total-row td { background: #f1f5f9; font-weight: 800; border-top: 2px solid #0f172a; }
+          th { background: #601717; color: #ffffff; font-size: 10.5px; text-transform: uppercase; padding: 8px 6px; border: 1px solid #4a1111; }
+          td { padding: 7px 6px; border: 1px solid #d4d4d8; font-size: 11px; }
+          tr:nth-child(even) { background: #fafafa; }
+          .total-row td { background: #f4f4f5; font-weight: 800; border-top: 2px solid #601717; }
           .signatures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 55px; page-break-inside: avoid; }
-          .sig-box { border-top: 1px solid #0f172a; text-align: center; padding-top: 6px; font-size: 11px; }
+          .sig-box { border-top: 1px solid #18181b; text-align: center; padding-top: 6px; font-size: 11px; }
         </style>
       </head>
       <body>
         <div class="header">
-          <div>
-            <h1 class="title">Planilla de Cómputos Métricos y Requisición de Materiales</h1>
-            <p class="subtitle">Catálogo Técnico de Infraestructura y Redes Eléctricas</p>
+          <div class="brand-wrap">
+            <img src="${logoAbsUrl}" alt="Servimeta C.A." class="brand-logo" />
+            <div>
+              <h1 class="title">Planilla de Cómputos Métricos y Requisición de Materiales</h1>
+              <p class="subtitle">Servimeta C.A. (RIF: J-30786992-5) • Catálogo Técnico de Infraestructura y Redes Eléctricas</p>
+            </div>
           </div>
           <div style="text-align:right;font-size:11px;">
             <div><strong>Fecha:</strong> ${fecha}</div>
             <div><strong>Total Renglones:</strong> ${totalRenglones}</div>
             <div><strong>Total Unidades:</strong> ${totalUnidades}</div>
-            ${totalEstimadoUsd > 0 ? `<div><strong>Total Ref. USD:</strong> $${totalEstimadoUsd.toFixed(2)}</div>` : ''}
+            ${totalEstimadoUsd > 0 ? `<div style="color:#601717;"><strong>Total Ref. USD:</strong> $${totalEstimadoUsd.toFixed(2)}</div>` : ''}
           </div>
         </div>
 
@@ -301,7 +309,7 @@ export default function RequisitionModal({
               <td colspan="5" style="text-align:right;">TOTALES ESTIMADOS DE LA REQUISICIÓN:</td>
               <td style="text-align:right;">${totalUnidades}</td>
               <td></td>
-              <td style="text-align:right;font-family:monospace;">$${totalEstimadoUsd.toFixed(2)}</td>
+              <td style="text-align:right;font-family:monospace;color:#601717;">$${totalEstimadoUsd.toFixed(2)}</td>
               <td></td>
             </tr>
           </tbody>
@@ -314,7 +322,7 @@ export default function RequisitionModal({
           </div>
           <div class="sig-box">
             <strong>Revisado y Aprobado por:</strong><br/>
-            Coordinación de Ingeniería / Operaciones
+            Coordinación de Ingeniería / Servimeta C.A.
           </div>
           <div class="sig-box">
             <strong>Recibido por:</strong><br/>
@@ -366,18 +374,18 @@ export default function RequisitionModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 no-print overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-6xl w-full shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden">
-        {/* Cabecera del Módulo */}
-        <div className="bg-slate-900 text-white px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="fixed inset-0 bg-zinc-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 no-print overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-6xl w-full shadow-2xl border border-zinc-200 flex flex-col max-h-[92vh] overflow-hidden">
+        {/* Cabecera del Módulo con Identidad Servimeta C.A. */}
+        <div className="bg-zinc-950 text-white px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b-2 border-servimeta-800">
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-600 p-2.5 rounded-lg text-white shadow">
+            <div className="bg-servimeta-800 p-2.5 rounded-lg text-white shadow border border-servimeta-600/40">
               <i className="fa-solid fa-clipboard-list text-xl"></i>
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold flex items-center gap-2 flex-wrap">
                 <span>Módulo de Cómputos Métricos y Requisición de Materiales</span>
-                <span className="bg-indigo-500/30 text-indigo-200 text-xs px-2.5 py-0.5 rounded-full border border-indigo-400/30">
+                <span className="bg-servimeta-800/40 text-servimeta-200 text-xs px-2.5 py-0.5 rounded-full border border-servimeta-600/40">
                   {totalRenglones} renglones • {totalUnidades} unds.
                 </span>
                 {editingReqCodigo && (
@@ -386,22 +394,22 @@ export default function RequisitionModal({
                   </span>
                 )}
               </h2>
-              <p className="text-xs text-slate-400">
-                Armado de listas de materiales por obra, cálculo de costos estimados, persistencia en PostgreSQL y exportación a Excel / PDF
+              <p className="text-xs text-zinc-400">
+                <strong className="text-servimeta-300">Servimeta C.A.</strong> • Armado de listas de materiales por obra, cálculo de costos estimados y exportación oficial
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             {/* Selector de Pestañas */}
-            <div className="bg-slate-800 p-1 rounded-lg flex text-xs font-semibold">
+            <div className="bg-zinc-900 p-1 rounded-lg flex text-xs font-semibold border border-zinc-800">
               <button
                 type="button"
                 onClick={() => setActiveTab('builder')}
                 className={`px-3 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'builder'
-                    ? 'bg-indigo-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-servimeta-800 text-white shadow'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 <i className="fa-solid fa-table-list"></i>
@@ -412,8 +420,8 @@ export default function RequisitionModal({
                 onClick={() => setActiveTab('history')}
                 className={`px-3 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'history'
-                    ? 'bg-indigo-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-servimeta-800 text-white shadow'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 <i className="fa-solid fa-database"></i>
@@ -424,7 +432,7 @@ export default function RequisitionModal({
             <button
               type="button"
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-1.5 ml-2 cursor-pointer"
+              className="text-zinc-400 hover:text-white p-1.5 ml-2 cursor-pointer"
             >
               <i className="fa-solid fa-xmark text-xl"></i>
             </button>
@@ -452,7 +460,7 @@ export default function RequisitionModal({
             </div>
             <button
               onClick={() => setStatusMsg(null)}
-              className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              className="text-zinc-400 hover:text-zinc-600 cursor-pointer"
             >
               <i className="fa-solid fa-xmark"></i>
             </button>
@@ -464,9 +472,9 @@ export default function RequisitionModal({
           {activeTab === 'builder' ? (
             <>
               {/* Formulario de Cabecera de Obra Eléctrica */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200 grid grid-cols-1 sm:grid-cols-12 gap-3">
                 <div className="sm:col-span-5">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
                     Proyecto / Obra Eléctrica <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -474,12 +482,12 @@ export default function RequisitionModal({
                     value={proyecto}
                     onChange={(e) => setProyecto(e.target.value)}
                     placeholder="Ej. Adecuación Circuito 13.8 kV Zona Industrial"
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3 py-2 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
                   />
                 </div>
 
                 <div className="sm:col-span-4">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
                     Ingeniero / Solicitante
                   </label>
                   <input
@@ -487,18 +495,18 @@ export default function RequisitionModal({
                     value={solicitante}
                     onChange={(e) => setSolicitante(e.target.value)}
                     placeholder="Ej. Ing. Electricista Residente"
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3 py-2 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
                   />
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
                     Nivel de Tensión
                   </label>
                   <select
                     value={nivelTension}
                     onChange={(e) => setNivelTension(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer"
+                    className="w-full px-3 py-2 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none cursor-pointer"
                   >
                     {NIVELES_TENSION.map((nt) => (
                       <option key={nt} value={nt}>
@@ -509,7 +517,7 @@ export default function RequisitionModal({
                 </div>
 
                 <div className="sm:col-span-5">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
                     Ubicación / Subestación / Tramo
                   </label>
                   <input
@@ -517,12 +525,12 @@ export default function RequisitionModal({
                     value={ubicacion}
                     onChange={(e) => setUbicacion(e.target.value)}
                     placeholder="Ej. Subestación Este - Tramo Postes P-01 al P-18"
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3 py-2 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
                   />
                 </div>
 
                 <div className="sm:col-span-7">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
                     Observaciones Técnicas / Unidad Constructiva
                   </label>
                   <input
@@ -530,32 +538,32 @@ export default function RequisitionModal({
                     value={observaciones}
                     onChange={(e) => setObservaciones(e.target.value)}
                     placeholder="Ej. Materiales para estructuras tangentes y retenidas según norma CADAFE/CORPOELEC"
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3 py-2 bg-white border border-zinc-300 rounded-lg text-xs focus:ring-2 focus:ring-servimeta-700 focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Tabla de Renglones de Cómputos Métricos */}
               {reqItems.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
-                  <i className="fa-solid fa-cart-flatbed text-3xl text-slate-300 mb-3"></i>
-                  <h4 className="text-sm font-bold text-slate-700">
+                <div className="text-center py-12 bg-white rounded-xl border border-dashed border-zinc-300">
+                  <i className="fa-solid fa-cart-flatbed text-3xl text-zinc-300 mb-3"></i>
+                  <h4 className="text-sm font-bold text-zinc-700">
                     La planilla de cómputos métricos está vacía
                   </h4>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+                  <p className="text-xs text-zinc-500 max-w-md mx-auto mt-1">
                     Cierra esta ventana y haz clic en el botón{' '}
-                    <span className="font-semibold text-indigo-600">
+                    <span className="font-semibold text-servimeta-700">
                       "+ Cómputo"
                     </span>{' '}
                     en cualquiera de las tarjetas del catálogo para ir armando tu lista de materiales.
                   </p>
                 </div>
               ) : (
-                <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="border border-zinc-200 rounded-xl overflow-hidden shadow-sm">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-slate-800 text-white text-[11px] uppercase">
+                        <tr className="bg-zinc-900 text-white text-[11px] uppercase border-b-2 border-servimeta-800">
                           <th className="py-2.5 px-3 text-center w-10">#</th>
                           <th className="py-2.5 px-3 w-16">ID Cat.</th>
                           <th className="py-2.5 px-3">Material / Nomenclatura Técnica</th>
@@ -567,21 +575,21 @@ export default function RequisitionModal({
                           <th className="py-2.5 px-3 w-10 text-center"></th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 text-xs">
+                      <tbody className="divide-y divide-zinc-200 text-xs">
                         {reqItems.map((it, idx) => {
                           const unitPrice = Number(it.precio_referencia) || 0;
                           const subtotal = (Number(it.cantidad) || 0) * unitPrice;
                           return (
-                            <tr key={it.material_id || it.id} className="hover:bg-slate-50">
-                              <td className="py-2.5 px-3 text-center font-bold text-slate-500">
+                            <tr key={it.material_id || it.id} className="hover:bg-zinc-50">
+                              <td className="py-2.5 px-3 text-center font-bold text-zinc-500">
                                 {String(idx + 1).padStart(2, '0')}
                               </td>
-                              <td className="py-2.5 px-3 font-mono text-slate-600 font-semibold">
+                              <td className="py-2.5 px-3 font-mono text-zinc-600 font-semibold">
                                 #{it.material_id || it.id}
                               </td>
                               <td className="py-2.5 px-3">
-                                <div className="font-bold text-slate-900">{it.title}</div>
-                                <div className="text-[10px] text-slate-500">{it.category}</div>
+                                <div className="font-bold text-zinc-900">{it.title}</div>
+                                <div className="text-[10px] text-zinc-500">{it.category}</div>
                               </td>
                               <td className="py-2.5 px-3 text-center">
                                 <select
@@ -591,7 +599,7 @@ export default function RequisitionModal({
                                       unidad: e.target.value,
                                     })
                                   }
-                                  className="px-2 py-1 border border-slate-300 rounded bg-white text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-indigo-500"
+                                  className="px-2 py-1 border border-zinc-300 rounded bg-white text-xs font-semibold text-zinc-800 focus:ring-1 focus:ring-servimeta-700"
                                 >
                                   {UNIDADES.map((u) => (
                                     <option key={u} value={u}>
@@ -609,7 +617,7 @@ export default function RequisitionModal({
                                         cantidad: Math.max(1, (Number(it.cantidad) || 1) - 1),
                                       })
                                     }
-                                    className="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center cursor-pointer"
+                                    className="w-6 h-6 rounded bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center cursor-pointer"
                                   >
                                     -
                                   </button>
@@ -623,7 +631,7 @@ export default function RequisitionModal({
                                         cantidad: e.target.value,
                                       })
                                     }
-                                    className="w-14 text-center px-1 py-1 border border-slate-300 rounded font-bold text-slate-900"
+                                    className="w-14 text-center px-1 py-1 border border-zinc-300 rounded font-bold text-zinc-900"
                                   />
                                   <button
                                     type="button"
@@ -632,7 +640,7 @@ export default function RequisitionModal({
                                         cantidad: (Number(it.cantidad) || 0) + 1,
                                       })
                                     }
-                                    className="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center cursor-pointer"
+                                    className="w-6 h-6 rounded bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center cursor-pointer"
                                   >
                                     +
                                   </button>
@@ -651,7 +659,7 @@ export default function RequisitionModal({
                                     })
                                   }
                                   placeholder="0.00"
-                                  className="w-20 text-right px-1.5 py-1 border border-slate-200 rounded font-mono text-xs text-slate-800 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                                  className="w-20 text-right px-1.5 py-1 border border-zinc-200 rounded font-mono text-xs text-zinc-800 focus:ring-1 focus:ring-servimeta-700 focus:outline-none"
                                 />
                               </td>
                               <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-700">
@@ -667,14 +675,14 @@ export default function RequisitionModal({
                                     })
                                   }
                                   placeholder="Ej. Poste P-05 / Retenida"
-                                  className="w-full px-2 py-1 border border-slate-200 rounded text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                                  className="w-full px-2 py-1 border border-zinc-200 rounded text-xs focus:ring-1 focus:ring-servimeta-700 focus:outline-none"
                                 />
                               </td>
                               <td className="py-2.5 px-3 text-center">
                                 <button
                                   type="button"
                                   onClick={() => onRemoveItem(it.material_id || it.id)}
-                                  className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                                  className="text-zinc-400 hover:text-rose-600 p-1 cursor-pointer"
                                   title="Quitar renglón"
                                 >
                                   <i className="fa-solid fa-trash-can"></i>
@@ -693,17 +701,17 @@ export default function RequisitionModal({
             /* Pestaña 2: Historial guardado en PostgreSQL */
             <div className="space-y-3">
               {loadingHistory ? (
-                <div className="text-center py-12 text-slate-500 text-xs">
-                  <i className="fa-solid fa-circle-notch fa-spin text-xl text-indigo-600 mb-2"></i>
+                <div className="text-center py-12 text-zinc-500 text-xs">
+                  <i className="fa-solid fa-circle-notch fa-spin text-xl text-servimeta-700 mb-2"></i>
                   <p>Consultando requisiciones en PostgreSQL (db_catalogo)...</p>
                 </div>
               ) : savedRequisiciones.length === 0 ? (
-                <div className="text-center py-12 bg-slate-50 rounded-xl border border-slate-200">
-                  <i className="fa-solid fa-folder-open text-3xl text-slate-300 mb-2"></i>
-                  <p className="text-sm font-semibold text-slate-700">
+                <div className="text-center py-12 bg-zinc-50 rounded-xl border border-zinc-200">
+                  <i className="fa-solid fa-folder-open text-3xl text-zinc-300 mb-2"></i>
+                  <p className="text-sm font-semibold text-zinc-700">
                     No hay requisiciones guardadas todavía en PostgreSQL
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-zinc-500 mt-1">
                     Arma una planilla en la pestaña activa y pulsa "Guardar en PostgreSQL".
                   </p>
                 </div>
@@ -711,21 +719,21 @@ export default function RequisitionModal({
                 savedRequisiciones.map((req) => (
                   <div
                     key={req.id}
-                    className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-indigo-300 transition flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                    className="bg-white border border-zinc-200 rounded-xl p-4 shadow-sm hover:border-servimeta-400 transition flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="bg-indigo-100 text-indigo-800 text-xs font-mono font-bold px-2.5 py-0.5 rounded border border-indigo-200">
+                        <span className="bg-servimeta-100 text-servimeta-800 text-xs font-mono font-bold px-2.5 py-0.5 rounded border border-servimeta-200">
                           {req.codigo}
                         </span>
-                        <h4 className="text-sm font-bold text-slate-900">
+                        <h4 className="text-sm font-bold text-zinc-900">
                           {req.proyecto}
                         </h4>
-                        <span className="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium">
+                        <span className="text-[11px] bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded font-medium">
                           {req.nivel_tension}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-600">
+                      <p className="text-xs text-zinc-600">
                         <strong>Solicitante:</strong> {req.solicitante || 'N/A'} •{' '}
                         <strong>Ubicación:</strong> {req.ubicacion || 'N/A'} •{' '}
                         <strong>Ítems:</strong> {req.items?.length || 0} renglones •{' '}
@@ -738,7 +746,7 @@ export default function RequisitionModal({
                       <button
                         type="button"
                         onClick={() => handleLoadFromHistory(req)}
-                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        className="px-3 py-1.5 bg-servimeta-800 hover:bg-servimeta-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
                       >
                         <i className="fa-solid fa-file-import"></i>
                         <span>Cargar en Planilla</span>
@@ -761,7 +769,7 @@ export default function RequisitionModal({
 
         {/* Pie de Acciones */}
         {activeTab === 'builder' && (
-          <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          <div className="bg-zinc-50 px-6 py-4 border-t border-zinc-200 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-4">
               {reqItems.length > 0 && (
                 <button
@@ -799,9 +807,9 @@ export default function RequisitionModal({
                 type="button"
                 disabled={reqItems.length === 0}
                 onClick={handlePrintRequisition}
-                className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-40 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
               >
-                <i className="fa-solid fa-print"></i>
+                <i className="fa-solid fa-print text-servimeta-400"></i>
                 <span>Imprimir Planilla Oficial (PDF)</span>
               </button>
 
@@ -810,7 +818,7 @@ export default function RequisitionModal({
                   type="button"
                   disabled={saving || reqItems.length === 0}
                   onClick={() => handleSaveToPostgres(true)}
-                  className="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-2 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
                   title="Crear un nuevo código de requisición en PostgreSQL"
                 >
                   <i className="fa-solid fa-copy"></i>
@@ -822,7 +830,7 @@ export default function RequisitionModal({
                 type="button"
                 disabled={saving || reqItems.length === 0}
                 onClick={() => handleSaveToPostgres(false)}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 bg-servimeta-800 hover:bg-servimeta-700 disabled:opacity-40 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer"
               >
                 <i className="fa-solid fa-floppy-disk"></i>
                 <span>

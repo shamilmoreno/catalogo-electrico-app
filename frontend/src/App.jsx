@@ -578,7 +578,7 @@ export default function App() {
     );
   };
 
-  // Si no ha iniciado sesión, mostrar pantalla de Login con selector de roles
+  // Si no ha iniciado sesión, mostrar pantalla de Login con identidad Servimeta C.A.
   if (!currentUser) {
     return (
       <LoginPage
@@ -595,7 +595,7 @@ export default function App() {
   });
 
   return (
-    <div className="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
+    <div className="bg-zinc-100 min-h-screen text-zinc-800 flex flex-col">
       <Header
         totalCount={materialsData.length}
         familiasCount={familias.length || 11}
@@ -617,13 +617,13 @@ export default function App() {
           @media print {
             main { display: none !important; }
             body::before {
-              content: "DESCARGA E IMPRESIÓN DESHABILITADA PARA EL PERFIL DE SOLO LECTURA (VISOR)";
+              content: "DESCARGA E IMPRESIÓN DESHABILITADA PARA EL PERFIL DE SOLO LECTURA (VISOR) — SERVIMETA C.A.";
               display: block;
               padding: 40px;
               text-align: center;
               font-weight: bold;
               font-size: 18px;
-              border: 2px solid #0f172a;
+              border: 2px solid #601717;
               margin: 40px;
             }
           }
@@ -631,23 +631,30 @@ export default function App() {
       )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full container-print">
-        {/* Cabecera para impresión PDF */}
+        {/* Cabecera para impresión PDF con Identidad Corporativa Servimeta C.A. */}
         <div className="hidden header-print">
-          <div className="flex justify-between items-center border-b-2 border-slate-900 pb-3">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">
-                CATÁLOGO TÉCNICO COMERCIAL DE MATERIALES ELÉCTRICOS
-              </h1>
-              <p className="text-sm text-slate-600">
-                Inventario Oficial Detallado • {materialsData.length} Ítems • Emitido por: {currentUser.nombre_completo}
-              </p>
+          <div className="flex justify-between items-center pb-3">
+            <div className="flex items-center gap-4">
+              <img
+                src="/logo-servimeta.png"
+                alt="Servimeta C.A."
+                className="h-12 w-auto object-contain"
+              />
+              <div>
+                <h1 className="text-xl font-extrabold text-zinc-950 uppercase tracking-tight">
+                  CATÁLOGO TÉCNICO COMERCIAL DE MATERIALES ELÉCTRICOS
+                </h1>
+                <p className="text-xs text-zinc-600 font-medium">
+                  <strong>Servimeta C.A.</strong> (RIF: J-30786992-5) • Inventario Oficial ({materialsData.length} Ítems) • Emitido por: {currentUser.nombre_completo}
+                </p>
+              </div>
             </div>
-            <div className="text-right text-xs text-slate-500">
+            <div className="text-right text-xs text-zinc-600">
               <p>
-                Fecha: <span>{printDate}</span>
+                Fecha: <span className="font-semibold">{printDate}</span>
               </p>
-              <p className="font-semibold text-slate-800">
-                Total ítems: <span>{totalItems}</span>
+              <p className="font-bold text-servimeta-800">
+                Total ítems listados: <span>{totalItems}</span>
               </p>
             </div>
           </div>
@@ -669,10 +676,10 @@ export default function App() {
         />
 
         {loading ? (
-          <div className="text-center py-20 bg-white rounded-xl border border-slate-200 shadow-sm">
-            <i className="fa-solid fa-circle-notch fa-spin text-3xl text-sky-600 mb-3"></i>
-            <p className="text-sm font-medium text-slate-600">
-              Cargando catálogo técnico desde PostgreSQL...
+          <div className="text-center py-20 bg-white rounded-xl border border-zinc-200 shadow-sm">
+            <i className="fa-solid fa-circle-notch fa-spin text-3xl text-servimeta-700 mb-3"></i>
+            <p className="text-sm font-medium text-zinc-600">
+              Cargando catálogo técnico de Servimeta C.A. desde PostgreSQL...
             </p>
           </div>
         ) : error ? (
@@ -724,6 +731,27 @@ export default function App() {
           </>
         )}
       </main>
+
+      {/* Pie de Página Corporativo Servimeta C.A. */}
+      <footer className="bg-zinc-950 text-zinc-400 border-t-2 border-servimeta-800 py-4 px-4 sm:px-6 lg:px-8 mt-8 no-print">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <div className="bg-white px-2 py-1 rounded-lg">
+              <img
+                src="/logo-servimeta.png"
+                alt="Servimeta C.A."
+                className="h-5 w-auto object-contain"
+              />
+            </div>
+            <span>
+              <strong className="text-white">Servimeta C.A.</strong> • RIF: J-30786992-5
+            </span>
+          </div>
+          <div className="text-zinc-500 text-center sm:text-right">
+            Catálogo Técnico Comercial de Materiales Eléctricos • Gestión de Inventario y Cómputos Métricos
+          </div>
+        </div>
+      </footer>
 
       {/* Modal para asignar o limpiar foto rápida */}
       <ImageModal
