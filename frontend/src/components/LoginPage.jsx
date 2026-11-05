@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 
-export default function LoginPage({ onLoginSuccess, apiBaseUrl = 'http://localhost:3000/api' }) {
+export default function LoginPage({
+  onLoginSuccess,
+  onEnterDemo,
+  apiBaseUrl = 'http://localhost:3000/api',
+}) {
   // Modos: 'login' | 'forgot' | 'reset'
   const [view, setView] = useState('login');
 
@@ -230,6 +234,24 @@ export default function LoginPage({ onLoginSuccess, apiBaseUrl = 'http://localho
                   <span>{loading ? 'Verificando credenciales...' : 'Ingresar al Sistema'}</span>
                 </button>
               </form>
+
+              {onEnterDemo && (
+                <div className="mt-5 pt-4 border-t border-zinc-800/90">
+                  <div className="flex items-center justify-center gap-2 mb-2.5">
+                    <span className="text-[11px] text-zinc-400 font-medium">
+                      ¿Solo deseas explorar el catálogo rápidamente?
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onEnterDemo}
+                    className="w-full py-2.5 bg-zinc-800/90 hover:bg-zinc-800 text-amber-300 hover:text-amber-200 text-xs font-bold uppercase tracking-wide rounded-lg border border-amber-500/30 hover:border-amber-400/60 shadow transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <i className="fa-solid fa-eye text-amber-400"></i>
+                    <span>Entrar en Modo Demo Simple (Sin Login)</span>
+                  </button>
+                </div>
+              )}
             </>
           )}
 
