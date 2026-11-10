@@ -21,7 +21,6 @@ function verifyPassword(password, storedHash) {
     if (derived.length !== keyBuf.length) return false;
     return crypto.timingSafeEqual(derived, keyBuf);
   }
-  // Compatibilidad con hashes SHA-256 previos
   const legacyHash = crypto.createHash('sha256').update(String(password)).digest('hex');
   const a = Buffer.from(legacyHash, 'utf8');
   const b = Buffer.from(storedHash, 'utf8');
@@ -30,6 +29,11 @@ function verifyPassword(password, storedHash) {
 }
 
 async function ensureDatabaseExists() {
+  // Si estamos usando DATABASE_URL en la nube (Render/Vercel), la BD ya existe y no se requiere CREATE DATABASE
+  if (process.env.DATABASE_URL) {
+    return;
+  }
+
   const adminClient = new Client({
     host: dbConfig.host,
     port: dbConfig.port,
@@ -78,102 +82,17 @@ async function seedDefaultSuppliers() {
 }
 
 const DEFAULT_FAMILIAS = [
-  {
-    nombre: 'Abrazaderas',
-    codigo: 'FAM-ABR',
-    descripcion:
-      'Abrazaderas metálicas utilizadas para fijar elementos, tubos, herrajes o crucetas a postes o estructuras.',
-    proveedor_sugerido:
-      'Herrajes Eléctricos C.A. / Industrias Galvanizadas (Ref. Hubbell / Chance)',
-    color_badge: 'blue',
-  },
-  {
-    nombre: 'Aisladores y Accesorios',
-    codigo: 'FAM-AIS',
-    descripcion:
-      'Aisladores eléctricos de porcelana o poliméricos y accesorios diseñados para soporte mecánico y aislamiento dieléctrico.',
-    proveedor_sugerido:
-      'Suministros de Media Tensión (Ref. Gamma / Lapp Insulators / Hubbell)',
-    color_badge: 'amber',
-  },
-  {
-    nombre: 'Anclas, Guayas, Flejes y Herrajes de Línea',
-    codigo: 'FAM-HER',
-    descripcion:
-      'Herrajes y elementos de retenida utilizados para el anclaje, tensado y sujeción mecánica de líneas aéreas.',
-    proveedor_sugerido:
-      'Ferretería de Líneas Eléctricas (Ref. PLP - Preformed Line Products)',
-    color_badge: 'cyan',
-  },
-  {
-    nombre: 'Cables, Conductores y Cintas',
-    codigo: 'FAM-CAB',
-    descripcion:
-      'Conductores eléctricos desnudos o aislados y cintas para transporte de energía, empalmes y aislamiento.',
-    proveedor_sugerido:
-      'Conductores Eléctricos Nacionales (Ref. Elecon / Cabel / 3M)',
-    color_badge: 'stone',
-  },
-  {
-    nombre: 'Conectores y Terminales',
-    codigo: 'FAM-CON',
-    descripcion:
-      'Conectores y terminales eléctricos diseñados para asegurar la continuidad eléctrica y fijación entre conductores o equipos.',
-    proveedor_sugerido:
-      'Distribuidora de Conectores Eléctricos (Ref. Burndy / Blackburn / Ilsco)',
-    color_badge: 'emerald',
-  },
-  {
-    nombre: 'Fusibles, Seccionadores y Protección',
-    codigo: 'FAM-PRO',
-    descripcion:
-      'Dispositivos de maniobra y protección contra sobrecorrientes o sobretensiones en redes de distribución eléctrica.',
-    proveedor_sugerido:
-      'Equipos de Protección y Maniobra MT (Ref. S&C / Cooper Power / ABB)',
-    color_badge: 'rose',
-  },
-  {
-    nombre: 'Postes, Crucetas, Estructuras y Soportes',
-    codigo: 'FAM-EST',
-    descripcion:
-      'Elementos estructurales de soporte para el tendido y montaje de herrajes, aisladores y equipos en líneas eléctricas.',
-    proveedor_sugerido: 'Metalúrgica de Postes y Crucetas Eléctricas C.A.',
-    color_badge: 'slate',
-  },
-  {
-    nombre: 'Sistemas de Puesta a Tierra y Equipos',
-    codigo: 'FAM-SPT',
-    descripcion:
-      'Componentes para sistemas de puesta a tierra, barras cooperweld y disipación segura de corrientes de falla.',
-    proveedor_sugerido:
-      'Sistemas de Puesta a Tierra y Pararrayos (Ref. Erico / Copperweld)',
-    color_badge: 'violet',
-  },
-  {
-    nombre: 'Tapas, Tanquillas y Cajas',
-    codigo: 'FAM-TAN',
-    descripcion:
-      'Elementos de canalización subterránea o registro para alojamiento, inspección y protección de conexiones eléctricas.',
-    proveedor_sugerido: 'Fundición y Prefabricados Eléctricos C.A.',
-    color_badge: 'orange',
-  },
-  {
-    nombre: 'Tornillería y Fijación',
-    codigo: 'FAM-TOR',
-    descripcion:
-      'Elementos de tornillería galvanizada o bronce y fijación mecánica para el ensamblaje seguro de estructuras y herrajes.',
-    proveedor_sugerido: 'Tornillería Industrial Galvanizada y Bronce C.A.',
-    color_badge: 'indigo',
-  },
-  {
-    nombre: 'Tubos, Conduits y Ductos',
-    codigo: 'FAM-TUB',
-    descripcion:
-      'Tuberías, conduits y conductos eléctricos para la canalización y protección mecánica de conductores.',
-    proveedor_sugerido:
-      'Tuberías y Canalizaciones Eléctricas (Ref. Conduit Aluminio / PVC)',
-    color_badge: 'teal',
-  },
+  { nombre: 'Abrazaderas', codigo: 'FAM-ABR', descripcion: 'Abrazaderas metálicas utilizadas para fijar elementos, tubos, herrajes o crucetas a postes o estructuras.', proveedor_sugerido: 'Herrajes Eléctricos C.A. / Industrias Galvanizadas (Ref. Hubbell / Chance)', color_badge: 'blue' },
+  { nombre: 'Aisladores y Accesorios', codigo: 'FAM-AIS', descripcion: 'Aisladores eléctricos de porcelana o poliméricos y accesorios diseñados para soporte mecánico y aislamiento dieléctrico.', proveedor_sugerido: 'Suministros de Media Tensión (Ref. Gamma / Lapp Insulators / Hubbell)', color_badge: 'amber' },
+  { nombre: 'Anclas, Guayas, Flejes y Herrajes de Línea', codigo: 'FAM-HER', descripcion: 'Herrajes y elementos de retenida utilizados para el anclaje, tensado y sujeción mecánica de líneas aéreas.', proveedor_sugerido: 'Ferretería de Líneas Eléctricas (Ref. PLP - Preformed Line Products)', color_badge: 'cyan' },
+  { nombre: 'Cables, Conductores y Cintas', codigo: 'FAM-CAB', descripcion: 'Conductores eléctricos desnudos o aislados y cintas para transporte de energía, empalmes y aislamiento.', proveedor_sugerido: 'Conductores Eléctricos Nacionales (Ref. Elecon / Cabel / 3M)', color_badge: 'stone' },
+  { nombre: 'Conectores y Terminales', codigo: 'FAM-CON', descripcion: 'Conectores y terminales eléctricos diseñados para asegurar la continuidad eléctrica y fijación entre conductores o equipos.', proveedor_sugerido: 'Distribuidora de Conectores Eléctricos (Ref. Burndy / Blackburn / Ilsco)', color_badge: 'emerald' },
+  { nombre: 'Fusibles, Seccionadores y Protección', codigo: 'FAM-PRO', descripcion: 'Dispositivos de maniobra y protección contra sobrecorrientes o sobretensiones en redes de distribución eléctrica.', proveedor_sugerido: 'Equipos de Protección y Maniobra MT (Ref. S&C / Cooper Power / ABB)', color_badge: 'rose' },
+  { nombre: 'Postes, Crucetas, Estructuras y Soportes', codigo: 'FAM-EST', descripcion: 'Elementos estructurales de soporte para el tendido y montaje de herrajes, aisladores y equipos en líneas eléctricas.', proveedor_sugerido: 'Metalúrgica de Postes y Crucetas Eléctricas C.A.', color_badge: 'slate' },
+  { nombre: 'Sistemas de Puesta a Tierra y Equipos', codigo: 'FAM-SPT', descripcion: 'Componentes para sistemas de puesta a tierra, barras cooperweld y disipación segura de corrientes de falla.', proveedor_sugerido: 'Sistemas de Puesta a Tierra y Pararrayos (Ref. Erico / Copperweld)', color_badge: 'violet' },
+  { nombre: 'Tapas, Tanquillas y Cajas', codigo: 'FAM-TAN', descripcion: 'Elementos de canalización subterránea o registro para alojamiento, inspección y protección de conexiones eléctricas.', proveedor_sugerido: 'Fundición y Prefabricados Eléctricos C.A.', color_badge: 'orange' },
+  { nombre: 'Tornillería y Fijación', codigo: 'FAM-TOR', descripcion: 'Elementos de tornillería galvanizada o bronce y fijación mecánica para el ensamblaje seguro de estructuras y herrajes.', proveedor_sugerido: 'Tornillería Industrial Galvanizada y Bronce C.A.', color_badge: 'indigo' },
+  { nombre: 'Tubos, Conduits y Ductos', codigo: 'FAM-TUB', descripcion: 'Tuberías, conduits y conductos eléctricos para la canalización y protección mecánica de conductores.', proveedor_sugerido: 'Tuberías y Canalizaciones Eléctricas (Ref. Conduit Aluminio / PVC)', color_badge: 'teal' },
 ];
 
 async function seedDefaultFamilias() {
@@ -185,17 +104,10 @@ async function seedDefaultFamilias() {
          codigo = CASE WHEN familias.codigo = '' OR familias.codigo IS NULL THEN EXCLUDED.codigo ELSE familias.codigo END,
          descripcion = CASE WHEN familias.descripcion = '' OR familias.descripcion IS NULL THEN EXCLUDED.descripcion ELSE familias.descripcion END,
          proveedor_sugerido = CASE WHEN familias.proveedor_sugerido = '' OR familias.proveedor_sugerido IS NULL THEN EXCLUDED.proveedor_sugerido ELSE familias.proveedor_sugerido END`,
-      [
-        fam.nombre,
-        fam.codigo,
-        fam.descripcion,
-        fam.proveedor_sugerido,
-        fam.color_badge,
-      ]
+      [fam.nombre, fam.codigo, fam.descripcion, fam.proveedor_sugerido, fam.color_badge]
     );
   }
 
-  // Asegurar también cualquier familia adicional que exista en la tabla materiales
   await pool.query(`
     INSERT INTO familias (nombre, codigo, descripcion, proveedor_sugerido, color_badge)
     SELECT DISTINCT
@@ -211,7 +123,6 @@ async function seedDefaultFamilias() {
 }
 
 async function ensureMainUser() {
-  // Asegurar que exista el usuario administrador principal: shamilmoreno con el nombre bien escrito "Shamil Moreno"
   const initialAdminPassword = process.env.ADMIN_INITIAL_PASSWORD || 'Shaq52..';
   const shamilHash = hashPassword(initialAdminPassword);
   const existing = await pool.query(
@@ -225,13 +136,7 @@ async function ensureMainUser() {
         (username, email, password_hash, nombre_completo, cargo, rol,
          puede_crear, puede_editar, puede_eliminar, puede_computos, puede_exportar, puede_usuarios, activo)
        VALUES ($1, $2, $3, $4, $5, 'ADMIN', TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)`,
-      [
-        'shamilmoreno',
-        'shamil.moreno@weworkintegrados.com',
-        shamilHash,
-        'Shamil Moreno',
-        'Coordinador Desarrollo',
-      ]
+      ['shamilmoreno', 'shamil.moreno@weworkintegrados.com', shamilHash, 'Shamil Moreno', 'Coordinador Desarrollo']
     );
     console.log('Usuario principal "shamilmoreno" (Shamil Moreno) creado en PostgreSQL.');
   } else {
