@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { API_BASE } from '../utils/api';
+import { API_BASE, normalizeApiBase } from '../utils/api';
 
 async function parseSafeJson(res) {
   const text = await res.text();
@@ -17,7 +17,7 @@ export default function LoginPage({
   onEnterDemo,
   apiBaseUrl = API_BASE,
 }) {
-  const cleanBaseUrl = (apiBaseUrl || API_BASE).trim().replace(/\/+$/, '');
+  const cleanBaseUrl = normalizeApiBase(apiBaseUrl || API_BASE);
 
   // Modos: 'login' | 'forgot' | 'reset'
   const [view, setView] = useState('login');
@@ -55,6 +55,12 @@ export default function LoginPage({
         throw new Error(data.error || 'Error de autenticación');
       }
 
+      if (!data.user || !data.token) {
+        throw new Error(
+          data.error ||
+            'Respuesta inválida del servidor. Verifica la URL de la API en Render.'
+        );
+      }
       onLoginSuccess(data.user, data.token);
     } catch (err) {
       if (err instanceof TypeError) {

@@ -15,13 +15,22 @@ function getDefaultApiBase() {
   return LOCAL_BACKEND_API;
 }
 
-function normalizeApiBase(rawUrl) {
+export function normalizeApiBase(rawUrl) {
   const fallback = getDefaultApiBase();
   if (!rawUrl || typeof rawUrl !== 'string') return fallback;
-  const cleaned = rawUrl.trim().replace(/\/+$/, '');
-  if (!cleaned) return fallback;
 
-  // Si en Render quedó guardada la URL antigua de Railway inactiva, redirigir automáticamente al backend activo en Render
+  // Si en el panel de Render se pegó accidentalmente "VITE_API_URL=https://...", extraer solo desde http(s)://
+  let cleaned = rawUrl
+    .trim()
+    .replace(/^['"]+|['"]+$/g, '')
+    .replace(/^.*?(https?:\/\/)/i, '$1')
+    .replace(/\/+$/, '');
+
+  if (!cleaned || !/^https?:\/\//i.test(cleaned)) {
+    return fallback;
+  }
+
+  // Si quedó guardada la URL antigua de Railway inactiva, redirigir al backend activo en Render
   if (cleaned.includes('catalogo-electrico-app-production.up.railway.app')) {
     return RENDER_BACKEND_API;
   }
