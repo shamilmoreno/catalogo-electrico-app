@@ -1,10 +1,24 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../utils/api';
+
+async function parseSafeJson(res) {
+  const text = await res.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    return {
+      error: `El servidor respondió con estado ${res.status} (${res.statusText || 'Error de red'}).`,
+    };
+  }
+}
 
 export default function LoginPage({
   onLoginSuccess,
   onEnterDemo,
-  apiBaseUrl = 'http://localhost:3000/api',
+  apiBaseUrl = API_BASE,
 }) {
+  const cleanBaseUrl = (apiBaseUrl || API_BASE).trim().replace(/\/+$/, '');
+
   // Modos: 'login' | 'forgot' | 'reset'
   const [view, setView] = useState('login');
 
@@ -31,19 +45,25 @@ export default function LoginPage({
     setSuccessMsg('');
 
     try {
-      const res = await fetch(`${apiBaseUrl}/auth/login`, {
+      const res = await fetch(`${cleanBaseUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (!res.ok) {
         throw new Error(data.error || 'Error de autenticación');
       }
 
       onLoginSuccess(data.user, data.token);
     } catch (err) {
-      setError(err.message || 'No se pudo conectar con el servidor de autenticación.');
+      if (err instanceof TypeError) {
+        setError(
+          'No se pudo conectar con el servidor Backend. Verifica que el servicio en Railway esté activo.'
+        );
+      } else {
+        setError(err.message || 'No se pudo conectar con el servidor de autenticación.');
+      }
     } finally {
       setLoading(false);
     }
@@ -56,12 +76,12 @@ export default function LoginPage({
     setSuccessMsg('');
 
     try {
-      const res = await fetch(`${apiBaseUrl}/auth/forgot-password`, {
+      const res = await fetch(`${cleanBaseUrl}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier }),
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (!res.ok) {
         throw new Error(data.error || 'No se pudo procesar la solicitud.');
       }
@@ -74,7 +94,13 @@ export default function LoginPage({
       );
       setView('reset');
     } catch (err) {
-      setError(err.message || 'Error al solicitar recuperación de contraseña.');
+      if (err instanceof TypeError) {
+        setError(
+          'No se pudo conectar con el servidor Backend para solicitar el código.'
+        );
+      } else {
+        setError(err.message || 'Error al solicitar recuperación de contraseña.');
+      }
     } finally {
       setLoading(false);
     }
@@ -92,7 +118,7 @@ export default function LoginPage({
 
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/auth/reset-password`, {
+      const res = await fetch(`${cleanBaseUrl}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -101,7 +127,7 @@ export default function LoginPage({
           new_password: newPassword,
         }),
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (!res.ok) {
         throw new Error(data.error || 'No se pudo actualizar la contraseña.');
       }

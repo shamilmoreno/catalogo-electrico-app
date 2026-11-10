@@ -1,6 +1,15 @@
 export const AUTH_USER_KEY = 'corpoelec_auth_user_v1';
 export const AUTH_TOKEN_KEY = 'corpoelec_auth_token_v1';
-export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+function normalizeApiBase(rawUrl) {
+  const fallback = 'http://localhost:3000/api';
+  if (!rawUrl || typeof rawUrl !== 'string') return fallback;
+  const cleaned = rawUrl.trim().replace(/\/+$/, '');
+  if (!cleaned) return fallback;
+  return cleaned.endsWith('/api') ? cleaned : `${cleaned}/api`;
+}
+
+export const API_BASE = normalizeApiBase(import.meta.env.VITE_API_URL);
 export const BACKEND_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
 
 export function getAuthHeaders(extraHeaders = {}) {

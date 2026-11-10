@@ -29,8 +29,8 @@ function verifyPassword(password, storedHash) {
 }
 
 async function ensureDatabaseExists() {
-  // Si estamos usando DATABASE_URL en la nube (Render/Vercel), la BD ya existe y no se requiere CREATE DATABASE
-  if (process.env.DATABASE_URL) {
+  // En entornos cloud (Railway, Neon, Render, Vercel), la base de datos ya está aprovisionada
+  if (dbConfig.isCloudDb || process.env.DATABASE_URL) {
     return;
   }
 
@@ -53,6 +53,11 @@ async function ensureDatabaseExists() {
       await adminClient.query(`CREATE DATABASE "${dbConfig.database}"`);
       console.log(`Base de datos "${dbConfig.database}" creada exitosamente.`);
     }
+  } catch (err) {
+    console.warn(
+      `Aviso al verificar existencia de BD local (${dbConfig.database}):`,
+      err.message || err.code || String(err)
+    );
   } finally {
     await adminClient.end().catch(() => {});
   }
