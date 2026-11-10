@@ -23,7 +23,7 @@ app.set('trust proxy', 1);
 // Orígenes permitidos para CORS (soporta lista en variables de entorno + dominios corporativos en Render/Railway y desarrollo local)
 const DEFAULT_ALLOWED_ORIGINS = [
   'https://catalogo-electrico-frontend.onrender.com',
-  'https://catalogo-electrico-app-production.up.railway.app',
+  'https://catalogo-electrico-backend.onrender.com',
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',

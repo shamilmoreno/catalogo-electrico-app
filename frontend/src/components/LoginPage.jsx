@@ -59,7 +59,7 @@ export default function LoginPage({
     } catch (err) {
       if (err instanceof TypeError) {
         setError(
-          'No se pudo conectar con el servidor Backend. Verifica que el servicio en Railway esté activo.'
+          'No se pudo conectar con el servidor Backend. Verifica que el servicio en Render esté activo.'
         );
       } else {
         setError(err.message || 'No se pudo conectar con el servidor de autenticación.');

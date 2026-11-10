@@ -1,11 +1,31 @@
 export const AUTH_USER_KEY = 'corpoelec_auth_user_v1';
 export const AUTH_TOKEN_KEY = 'corpoelec_auth_token_v1';
 
+const RENDER_BACKEND_API = 'https://catalogo-electrico-backend.onrender.com/api';
+const LOCAL_BACKEND_API = 'http://localhost:3000/api';
+
+function getDefaultApiBase() {
+  if (
+    typeof window !== 'undefined' &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1'
+  ) {
+    return RENDER_BACKEND_API;
+  }
+  return LOCAL_BACKEND_API;
+}
+
 function normalizeApiBase(rawUrl) {
-  const fallback = 'http://localhost:3000/api';
+  const fallback = getDefaultApiBase();
   if (!rawUrl || typeof rawUrl !== 'string') return fallback;
   const cleaned = rawUrl.trim().replace(/\/+$/, '');
   if (!cleaned) return fallback;
+
+  // Si en Render quedó guardada la URL antigua de Railway inactiva, redirigir automáticamente al backend activo en Render
+  if (cleaned.includes('catalogo-electrico-app-production.up.railway.app')) {
+    return RENDER_BACKEND_API;
+  }
+
   return cleaned.endsWith('/api') ? cleaned : `${cleaned}/api`;
 }
 
