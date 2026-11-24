@@ -20,7 +20,7 @@ export function normalizeApiBase(rawUrl) {
   if (!rawUrl || typeof rawUrl !== 'string') return fallback;
 
   // Si en el panel de Render se pegó accidentalmente "VITE_API_URL=https://...", extraer solo desde http(s)://
-  let cleaned = rawUrl
+  const cleaned = rawUrl
     .trim()
     .replace(/^['"]+|['"]+$/g, '')
     .replace(/^.*?(https?:\/\/)/i, '$1')
@@ -77,12 +77,10 @@ export function resolveMediaUrl(url) {
   if (!url || typeof url !== 'string') return '';
   const trimmed = url.trim();
   if (!trimmed) return '';
-  if (trimmed.startsWith('/uploads/')) {
-    return `${BACKEND_ORIGIN}${trimmed}`;
-  }
-  if (trimmed.includes('/uploads/') && trimmed.startsWith('http://localhost:3000')) {
-    const rel = trimmed.slice('http://localhost:3000'.length);
-    return `${BACKEND_ORIGIN}${rel}`;
+  const uploadsIdx = trimmed.indexOf('/uploads/');
+  if (uploadsIdx !== -1) {
+    const relUploads = trimmed.slice(uploadsIdx);
+    return `${BACKEND_ORIGIN}${relUploads}`;
   }
   return trimmed;
 }

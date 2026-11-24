@@ -3,6 +3,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const { Client } = require('pg');
 const { pool, dbConfig } = require('../config/db');
+const { uploadsDir, getMimeTypeFromFilename } = require('../utils/uploads');
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -163,6 +164,41 @@ async function ensureMainUser() {
   }
 }
 
+async function syncLocalUploadsToDatabase() {
+  try {
+    if (!fs.existsSync(uploadsDir)) return;
+    const files = await fs.promises.readdir(uploadsDir);
+    const validFiles = files.filter((f) => f && f !== '.gitkeep' && !f.startsWith('.'));
+    if (validFiles.length === 0) return;
+
+    const existingRes = await pool.query('SELECT filename FROM archivos_subidos');
+    const existingSet = new Set(existingRes.rows.map((r) => r.filename));
+
+    let syncedCount = 0;
+    for (const filename of validFiles) {
+      if (existingSet.has(filename)) continue;
+      const fullPath = path.join(uploadsDir, filename);
+      const stat = await fs.promises.stat(fullPath).catch(() => null);
+      if (!stat || !stat.isFile() || stat.size > 20 * 1024 * 1024) continue;
+
+      const buffer = await fs.promises.readFile(fullPath);
+      const mimeType = getMimeTypeFromFilename(filename);
+      await pool.query(
+        `INSERT INTO archivos_subidos (filename, mime_type, contenido, tamano_bytes)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (filename) DO NOTHING`,
+        [filename, mimeType, buffer, buffer.length]
+      );
+      syncedCount++;
+    }
+
+    if (syncedCount > 0) {
+      console.log(`Se respaldaron ${syncedCount} archivos locales de uploads en PostgreSQL (archivos_subidos).`);
+    }
+  } catch (err) {
+    console.warn('Aviso al sincronizar uploads locales con PostgreSQL:', err.message);
+  }
+}
 async function initDatabase() {
   await ensureDatabaseExists();
 
@@ -204,6 +240,7 @@ async function initDatabase() {
   await seedDefaultSuppliers();
   await seedDefaultFamilias();
   await ensureMainUser();
+  await syncLocalUploadsToDatabase();
 }
 
 if (require.main === module) {

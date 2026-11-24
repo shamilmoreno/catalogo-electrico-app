@@ -94,3 +94,13 @@ CREATE TABLE IF NOT EXISTS usuarios (
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS email VARCHAR(180) DEFAULT NULL;
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS reset_code VARCHAR(20) DEFAULT NULL;
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS reset_expires TIMESTAMP WITH TIME ZONE DEFAULT NULL;
+
+-- Tabla de almacenamiento persistente de archivos (imágenes y datasheets PDF) en PostgreSQL
+-- Garantiza que las fotos y PDFs subidos no se pierdan al redesplegar el contenedor en Render/Railway
+CREATE TABLE IF NOT EXISTS archivos_subidos (
+    filename VARCHAR(255) PRIMARY KEY,
+    mime_type VARCHAR(120) NOT NULL DEFAULT 'application/octet-stream',
+    contenido BYTEA NOT NULL,
+    tamano_bytes INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

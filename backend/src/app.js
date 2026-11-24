@@ -5,7 +5,12 @@ const cors = require('cors');
 const { pool } = require('./config/db');
 const { initDatabase } = require('./database/initDb');
 const { requirePerm } = require('./middleware/auth');
-const { uploadsDir, uploadImage } = require('./utils/uploads');
+const {
+  uploadsDir,
+  uploadImage,
+  saveFileToDb,
+  getFileFromDb,
+} = require('./utils/uploads');
 
 // Rutas modulares
 const authRoutes = require('./routes/auth.routes');
@@ -104,6 +109,21 @@ app.use(express.json({ limit: '10mb' }));
 // Servir públicamente la carpeta de imágenes y PDFs subidos
 app.use('/uploads', express.static(uploadsDir));
 
+app.get('/uploads/:filename', async (req, res) => {
+  try {
+    const fileData = await getFileFromDb(req.params.filename);
+    if (!fileData) {
+      return res.status(404).json({ error: 'Archivo no encontrado.' });
+    }
+    res.setHeader('Content-Type', fileData.mimeType);
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    return res.send(fileData.buffer);
+  } catch (err) {
+    console.error('Error recuperando archivo desde PostgreSQL:', err.message);
+    return res.status(500).json({ error: 'Error al recuperar archivo.' });
+  }
+});
+
 // Endpoint raíz informativo y para healthcheck de plataforma (Railway/Render)
 app.get('/', (req, res) => {
   res.json({
@@ -115,7 +135,7 @@ app.get('/', (req, res) => {
 
 // Subida directa de imagen desde PC
 app.post('/api/upload', requirePerm('puede_editar', 'puede_crear'), (req, res) => {
-  uploadImage.single('imagen')(req, res, (err) => {
+  uploadImage.single('imagen')(req, res, async (err) => {
     if (err) {
       return res.status(400).json({
         error: err.message || 'Error al subir el archivo de imagen.',
@@ -127,7 +147,18 @@ app.post('/api/upload', requirePerm('puede_editar', 'puede_crear'), (req, res) =
       });
     }
 
-    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    try {
+      await saveFileToDb(req.file.filename, req.file.mimetype, req.file.path);
+    } catch (dbErr) {
+      console.error('Error respaldando imagen en PostgreSQL:', dbErr.message);
+      return res.status(500).json({
+        error: 'No se pudo respaldar la imagen en PostgreSQL.',
+      });
+    }
+
+    const proto =
+      (req.headers['x-forwarded-proto'] || '').split(',')[0].trim() || req.protocol;
+    const fileUrl = `${proto}://${req.get('host')}/uploads/${req.file.filename}`;
     res.status(201).json({
       message: 'Imagen subida correctamente desde tu PC.',
       url: fileUrl,

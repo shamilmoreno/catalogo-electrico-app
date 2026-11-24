@@ -1,7 +1,7 @@
 const express = require('express');
 const { pool } = require('../config/db');
 const { requirePerm } = require('../middleware/auth');
-const { uploadPdf, removeOldUploadFile } = require('../utils/uploads');
+const { uploadPdf, removeOldUploadFile, saveFileToDb } = require('../utils/uploads');
 
 const router = express.Router();
 
@@ -385,9 +385,12 @@ router.post('/:id/upload-datasheet', requirePerm('puede_editar'), (req, res) => 
     }
 
     const { id } = req.params;
-    const pdfUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    const proto =
+      (req.headers['x-forwarded-proto'] || '').split(',')[0].trim() || req.protocol;
+    const pdfUrl = `${proto}://${req.get('host')}/uploads/${req.file.filename}`;
 
     try {
+      await saveFileToDb(req.file.filename, req.file.mimetype || 'application/pdf', req.file.path);
       const prevRes = await pool.query('SELECT datasheet_url FROM materiales WHERE id = $1', [id]);
       const oldPdfUrl = prevRes.rows[0]?.datasheet_url;
 

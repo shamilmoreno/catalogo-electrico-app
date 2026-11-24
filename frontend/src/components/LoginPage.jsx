@@ -163,6 +163,7 @@ export default function LoginPage({
         <div className="p-6 sm:p-8">
           {/* Cabecera Corporativa Servimeta C.A. */}
           <div className="flex flex-col items-center text-center mb-6 pb-5 border-b border-zinc-800">
+            {/* Logo de Servimeta oculto temporalmente
             <div className="bg-white px-5 py-3 rounded-xl shadow-md border border-zinc-200 mb-3.5 w-full flex items-center justify-center">
               <img
                 src="/logo-servimeta.png"
@@ -170,6 +171,7 @@ export default function LoginPage({
                 className="h-14 sm:h-16 w-auto object-contain"
               />
             </div>
+            */}
             <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white">
               Catálogo Técnico de Materiales Eléctricos
             </h1>

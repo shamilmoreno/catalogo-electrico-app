@@ -215,7 +215,8 @@ export default function RequisitionModal({
       day: 'numeric',
     });
 
-    const logoAbsUrl = `${window.location.origin}/logo-servimeta.png`;
+    // Logo de Servimeta oculto temporalmente
+    // const logoAbsUrl = `${window.location.origin}/logo-servimeta.png`;
 
     const rowsHtml = reqItems
       .map((it, idx) => {
@@ -267,7 +268,7 @@ export default function RequisitionModal({
       <body>
         <div class="header">
           <div class="brand-wrap">
-            <img src="${logoAbsUrl}" alt="Servimeta C.A." class="brand-logo" />
+            <!-- Logo de Servimeta oculto temporalmente -->
             <div>
               <h1 class="title">Planilla de Cómputos Métricos y Requisición de Materiales</h1>
               <p class="subtitle">Servimeta C.A. (RIF: J-30786992-5) • Catálogo Técnico de Infraestructura y Redes Eléctricas</p>

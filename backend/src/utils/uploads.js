@@ -3,11 +3,81 @@ const fs = require('fs');
 const multer = require('multer');
 const { pool } = require('../config/db');
 
-// Carpeta local donde se guardan las fotos y datasheets PDF subidos desde la PC (backend/uploads)
+// Carpeta local donde se guardan/cachean las fotos y datasheets PDF subidos (backend/uploads)
 const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
 
-// Limpieza segura de archivos locales huérfanos en backend/uploads/
+function getMimeTypeFromFilename(filename) {
+  const ext = path.extname(filename || '').toLowerCase();
+  switch (ext) {
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg';
+    case '.png':
+      return 'image/png';
+    case '.webp':
+      return 'image/webp';
+    case '.gif':
+      return 'image/gif';
+    case '.svg':
+      return 'image/svg+xml';
+    case '.bmp':
+      return 'image/bmp';
+    case '.pdf':
+      return 'application/pdf';
+    default:
+      return 'application/octet-stream';
+  }
+}
+
+// Guardar archivo subido en PostgreSQL (tabla archivos_subidos) para persistencia ante redeploys en Render/Railway
+async function saveFileToDb(filename, mimeType, filePathOrBuffer) {
+  if (!filename) return;
+  const safeFilename = path.basename(filename);
+  const buffer = Buffer.isBuffer(filePathOrBuffer)
+    ? filePathOrBuffer
+    : await fs.promises.readFile(filePathOrBuffer);
+  const resolvedMime = mimeType || getMimeTypeFromFilename(safeFilename);
+
+  await pool.query(
+    `INSERT INTO archivos_subidos (filename, mime_type, contenido, tamano_bytes)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (filename) DO UPDATE SET
+       mime_type = EXCLUDED.mime_type,
+       contenido = EXCLUDED.contenido,
+       tamano_bytes = EXCLUDED.tamano_bytes`,
+    [safeFilename, resolvedMime, buffer, buffer.length]
+  );
+}
+
+// Recuperar archivo desde PostgreSQL si el disco efímero de Render se reinició, y restaurarlo en caché local
+async function getFileFromDb(filename) {
+  if (!filename) return null;
+  const safeFilename = path.basename(decodeURIComponent(filename));
+  if (!safeFilename || safeFilename === '.' || safeFilename === '..') return null;
+
+  const res = await pool.query(
+    'SELECT mime_type, contenido FROM archivos_subidos WHERE filename = $1',
+    [safeFilename]
+  );
+  if (res.rowCount === 0) return null;
+
+  const { mime_type, contenido } = res.rows[0];
+  // Restaurar copia en disco local para que las siguientes peticiones se sirvan directo por express.static
+  try {
+    const localPath = path.join(uploadsDir, safeFilename);
+    await fs.promises.writeFile(localPath, contenido);
+  } catch (err) {
+    console.warn('No se pudo escribir caché en disco local de uploads:', err.message);
+  }
+
+  return {
+    mimeType: mime_type || getMimeTypeFromFilename(safeFilename),
+    buffer: contenido,
+  };
+}
+
+// Limpieza segura de archivos huérfanos en backend/uploads/ y en PostgreSQL (archivos_subidos)
 async function removeOldUploadFile(fileUrl, ignoreMaterialId = null) {
   if (!fileUrl || typeof fileUrl !== 'string' || !fileUrl.includes('/uploads/')) return;
   try {
@@ -24,6 +94,10 @@ async function removeOldUploadFile(fileUrl, ignoreMaterialId = null) {
       [`%/uploads/${safeFilename}`, ignoreMaterialId]
     );
     if (inUseRes.rowCount > 0) return;
+
+    await pool
+      .query('DELETE FROM archivos_subidos WHERE filename = $1', [safeFilename])
+      .catch(() => {});
 
     const fullPath = path.join(uploadsDir, safeFilename);
     if (fs.existsSync(fullPath)) {
@@ -79,6 +153,9 @@ const uploadPdf = multer({
 
 module.exports = {
   uploadsDir,
+  getMimeTypeFromFilename,
+  saveFileToDb,
+  getFileFromDb,
   removeOldUploadFile,
   uploadImage,
   uploadPdf,

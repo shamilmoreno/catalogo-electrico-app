@@ -55,6 +55,7 @@ export default function Header({
         <div className="flex items-center justify-between h-16 sm:h-18 gap-3 py-1">
           {/* ZONA IZQUIERDA: Identidad Corporativa Servimeta C.A. */}
           <div className="flex items-center gap-3 min-w-0">
+            {/* Logo de Servimeta oculto temporalmente
             <div className="bg-white px-2.5 py-1.5 rounded-xl flex items-center justify-center shadow-md border border-zinc-200/80 shrink-0">
               <img
                 src="/logo-servimeta.png"
@@ -62,6 +63,7 @@ export default function Header({
                 className="h-8 sm:h-9 w-auto object-contain"
               />
             </div>
+            */}
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h1 className="text-sm sm:text-base lg:text-lg font-extrabold tracking-tight text-white truncate">

@@ -400,7 +400,7 @@ export default function App() {
       setMaterialsData(mapped);
 
       setCustomImages((prev) => {
-        const merged = { ...prev, ...dbImages };
+        const merged = dbImages;
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
         } catch {}
@@ -851,11 +851,13 @@ export default function App() {
         <div className="hidden header-print">
           <div className="flex justify-between items-center pb-3">
             <div className="flex items-center gap-4">
+              {/* Logo de Servimeta oculto temporalmente
               <img
                 src="/logo-servimeta.png"
                 alt="Servimeta C.A."
                 className="h-12 w-auto object-contain"
               />
+              */}
               <div>
                 <h1 className="text-xl font-extrabold text-zinc-950 uppercase tracking-tight">
                   CATÁLOGO TÉCNICO COMERCIAL DE MATERIALES ELÉCTRICOS
@@ -952,6 +954,7 @@ export default function App() {
       <footer className="bg-zinc-950 text-zinc-400 border-t-2 border-servimeta-800 py-4 px-4 sm:px-6 lg:px-8 mt-8 no-print">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
+            {/* Logo de Servimeta oculto temporalmente
             <div className="bg-white px-2 py-1 rounded-lg">
               <img
                 src="/logo-servimeta.png"
@@ -959,6 +962,7 @@ export default function App() {
                 className="h-5 w-auto object-contain"
               />
             </div>
+            */}
             <span>
               <strong className="text-white">Servimeta C.A.</strong> • RIF: J-30786992-5
             </span>
